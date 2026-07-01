@@ -1,7 +1,7 @@
 {
     "name": "@eliware/signals",
     "type": "module",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "description": "Graceful shutdown signal handler utility for Node.js (ESM and CommonJS)",
     "main": "index.cjs",
     "module": "index.mjs",
@@ -51,7 +51,7 @@
     },
     "homepage": "https://github.com/eliware/signals#readme",
     "devDependencies": {
-        "jest": "^30.0.4"
+        "jest": "^30.4.2"
     },
     "jest": {
         "testEnvironment": "node",
@@ -62,6 +62,6 @@
         ]
     },
     "dependencies": {
-        "@eliware/log": "^1.0.12"
+        "@eliware/log": "^1.1.4"
     }
 }
