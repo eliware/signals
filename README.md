@@ -2,7 +2,7 @@
 
 ## @eliware/signals [![npm version](https://img.shields.io/npm/v/@eliware/signals.svg)](https://www.npmjs.com/package/@eliware/signals)[![license](https://img.shields.io/github/license/eliware/signals.svg)](LICENSE)[![build status](https://github.com/eliware/signals/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/signals/actions)
 
-> Graceful shutdown signal handler utility for Node.js (ESM and CommonJS)
+> Graceful shutdown signal handler utility for Node.js
 
 ---
 
@@ -12,7 +12,6 @@
 - [Installation](#installation)
 - [Usage](#usage)
   - [ESM Example](#esm-example)
-  - [CommonJS Example](#commonjs-example)
   - [Shutdown Hooks Example](#shutdown-hooks-example)
 - [API](#api)
 - [TypeScript](#typescript)
@@ -23,7 +22,7 @@
 - Register handlers for process signals (e.g., `SIGTERM`, `SIGINT`, `SIGHUP`)
 - Register async shutdown hooks to run on signal or process exit
 - Customizable logger and process object
-- Simple API for both ESM and CommonJS
+- Simple ESM API
 - TypeScript type definitions included
 - Well-tested with Jest
 
@@ -44,14 +43,6 @@ import registerSignals from '@eliware/signals'; // Default export
 const { shutdown, getShuttingDown } = registerSignals({ log });
 ```
 
-### CommonJS Example
-
-```js
-const log = require('@eliware/log');
-const registerSignals = require('@eliware/signals'); // Default export
-// or: const { registerSignals } = require('@eliware/signals');
-const { shutdown, getShuttingDown } = registerSignals({ log });
-```
 
 ### Shutdown Hooks Example
 
@@ -81,7 +72,6 @@ registerSignals({
 });
 ```
 
-> **Note:** Both the default export and named export `registerSignals` are available in both ESM and CommonJS.
 
 ## API
 

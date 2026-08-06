@@ -2,22 +2,19 @@
   "name": "@eliware/signals",
   "type": "module",
   "version": "1.1.2",
-  "description": "Graceful shutdown signal handler utility for Node.js (ESM and CommonJS)",
-  "main": "index.cjs",
-  "module": "index.mjs",
+  "description": "Graceful shutdown signal handler utility for Node.js",
+  "main": "index.mjs",
   "types": "index.d.ts",
   "files": [
     "index.mjs",
-    "index.cjs",
     "index.d.ts",
     "README.md",
     "LICENSE"
   ],
   "exports": {
     ".": {
-      "import": "./index.mjs",
-      "require": "./index.cjs",
-      "types": "./index.d.ts"
+      "types": "./index.d.ts",
+      "import": "./index.mjs"
     }
   },
   "scripts": {
@@ -38,8 +35,6 @@
     "handler",
     "utility",
     "esm",
-    "commonjs",
-    "cjs",
     "package",
     "library",
     "npm",
@@ -59,8 +54,7 @@
     "testEnvironment": "node",
     "testMatch": [
       "**/?(*.)+(spec|test).[jt]s?(x)",
-      "**/?(*.)+(spec|test).mjs",
-      "**/?(*.)+(spec|test).cjs"
+      "**/?(*.)+(spec|test).mjs"
     ]
   },
   "dependencies": {

@@ -1,7 +1,7 @@
 // Example usage for ESM
 import log from '@eliware/log';
 import registerSignals from '@eliware/signals';
-const { shutdown, getShuttingDown } = registerSignals({ log });
+registerSignals({ log });
 
 // Extended usage with shutdown hooks
 // Simulate a resource that needs cleanup (e.g., database connection)
