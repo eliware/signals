@@ -22,6 +22,10 @@
 - Register handlers for process signals (e.g., `SIGTERM`, `SIGINT`, `SIGHUP`)
 - Register async shutdown hooks to run on signal or process exit
 - Customizable logger and process object
+- Idempotent registration with repeat-safe listener cleanup
+- AbortSignal support for lifecycle-managed applications
+- Concurrent shutdown protection and per-hook error isolation
+- Configurable exit code and optional non-exiting mode
 - Simple ESM API
 - TypeScript type definitions included
 - Well-tested with Jest
@@ -84,7 +88,10 @@ Registers shutdown handlers for the specified signals and allows registering asy
 - `processObj` (default: `process`): The process object to attach handlers to.
 - `log` (default: `@eliware/log`): Logger for output. Should have `debug`, `info`, `warn`, and `error` methods.
 - `signals` (default: `[ 'SIGTERM', 'SIGINT', 'SIGHUP' ]`): Array of signals to listen for.
-- `shutdownHook` (optional): An async function to run during shutdown. You can call `registerSignals` multiple times to add multiple hooks.
+- `shutdownHook` (optional): A sync or async function to run during shutdown. Multiple registrations add hooks in order.
+- `exitCode` (default: `0`): Exit code used after signal-driven shutdown.
+- `exit` (default: `true`): Set to `false` for embedded applications and tests that should not call `process.exit`.
+- `signal` (optional): An `AbortSignal` that removes all registered listeners when aborted.
 
 #### Returns
 
@@ -92,8 +99,10 @@ An object with:
 
 - `shutdown(signal: string): Promise<void>` — Manually trigger shutdown logic.
 - `getShuttingDown(): boolean` — Returns whether shutdown is in progress.
+- `removeHandlers(): void` — Detaches registered listeners; safe to call repeatedly.
+- `removed: boolean` — Indicates whether cleanup has completed.
 
-> **Shutdown hooks will run on signal, `process.exit`, or `beforeExit`.**
+> **Shutdown hooks will run on signal, `process.exit`, or `beforeExit`. Node cannot safely perform arbitrary asynchronous work during the `exit` event; prefer explicit `shutdown()` or `beforeExit` for async cleanup.
 
 ## TypeScript
 

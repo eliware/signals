@@ -1,7 +1,7 @@
 import registerSignalsDefault, { registerSignals as registerSignalsNamed } from './index.mjs';
 import { jest, test, expect, beforeEach, describe } from '@jest/globals';
 
-const makeProcess = () => ({ on: jest.fn(), exit: jest.fn() });
+const makeProcess = () => ({ on: jest.fn(), off: jest.fn(), exit: jest.fn() });
 const makeLog = () => ({ debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() });
 const handler = (processObj, event) => processObj.on.mock.calls.find(([name]) => name === event)[1];
 
@@ -89,4 +89,55 @@ describe('registerSignals', () => {
     await handler(mockProcess, 'exit')(1);
     expect(mocklog.error).toHaveBeenCalledWith('Error during shutdown hook:', error);
   });
+});
+
+
+test('validates signals and deduplicates custom names', () => {
+  expect(() => registerSignalsNamed({ processObj: makeProcess(), signals: 'SIGTERM' })).toThrow(TypeError);
+  expect(() => registerSignalsNamed({ processObj: makeProcess(), signals: ['SIGTERM', 1] })).toThrow(TypeError);
+  const processObj = makeProcess();
+  registerSignalsNamed({ processObj, log: makeLog(), signals: ['SIGTERM', 'SIGTERM'] });
+  expect(processObj.on).toHaveBeenCalledTimes(3);
+});
+
+test('supports cleanup, abort, non-exiting shutdown, and custom exit code', async () => {
+  const processObj = makeProcess();
+  const log = makeLog();
+  const registration = registerSignalsNamed({ processObj, log, signals: ['USR1'], exit: false });
+  await registration.shutdown();
+  expect(processObj.exit).not.toHaveBeenCalled();
+  registration.removeHandlers();
+  registration.removeHandlers();
+  expect(registration.removed).toBe(true);
+  expect(processObj.off).toHaveBeenCalled();
+  const controller = new AbortController();
+  const aborted = registerSignalsNamed({ processObj: makeProcess(), log, signals: [], signal: controller.signal });
+  controller.abort();
+  expect(aborted.removed).toBe(true);
+  const already = new AbortController();
+  already.abort();
+  expect(registerSignalsNamed({ processObj: makeProcess(), log, signals: [], signal: already.signal }).removed).toBe(true);
+});
+
+test('continues hooks, prevents concurrent shutdown, and honors exit code', async () => {
+  const processObj = makeProcess();
+  const log = makeLog();
+  const first = jest.fn(async () => { throw new Error('first'); });
+  const second = jest.fn(async () => undefined);
+  const registration = registerSignalsNamed({ processObj, log, signals: [], shutdownHook: first, exitCode: 7 });
+  registerSignalsNamed({ processObj, log, signals: [], shutdownHook: second });
+  const one = registration.shutdown('SIGTERM');
+  const two = registration.shutdown('SIGINT');
+  await Promise.all([one, two]);
+  expect(second).toHaveBeenCalledWith('SIGTERM');
+  expect(processObj.exit).toHaveBeenCalledWith(7);
+  expect(log.warn).toHaveBeenCalledWith('Received SIGINT again, but already shutting down.');
+});
+
+test('supports process-like objects without exit or off', async () => {
+  const processObj = { on: jest.fn() };
+  const registration = registerSignalsNamed({ processObj, log: makeLog(), signals: [] });
+  await registration.shutdown('manual');
+  registration.removeHandlers();
+  expect(registration.removed).toBe(true);
 });

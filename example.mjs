@@ -1,27 +1,20 @@
-// Example usage for ESM
 import log from '@eliware/log';
-import registerSignals from '@eliware/signals';
-registerSignals({ log });
+import registerSignals from './index.mjs';
 
-// Extended usage with shutdown hooks
-// Simulate a resource that needs cleanup (e.g., database connection)
-const fakeDb = {
-  close: async () => {
-    return new Promise(resolve => setTimeout(() => {
-      log.info('Fake DB connection closed');
-      resolve();
-    }, 100));
-  }
-};
-
-// Initial registration of handlers
-registerSignals({ log });
-
-// Add shutdown hook for closing the fake DB connection
-registerSignals({
+const controller = new AbortController();
+const { shutdown, getShuttingDown, removeHandlers } = registerSignals({
   log,
-  shutdownHook: async (signal) => {
-    await fakeDb.close();
-    log.info(`Cleanup complete on ${signal}`);
-  }
+  signals: ['SIGTERM', 'SIGINT'],
+  signal: controller.signal,
+  exitCode: 0,
 });
+
+console.log(`Shutdown handlers ready: ${getShuttingDown()}`);
+
+// Application code can trigger the same graceful cleanup path explicitly.
+await shutdown('manual');
+console.log(`Shutdown started: ${getShuttingDown()}`);
+
+// Cleanup is idempotent; AbortSignal cleanup is also supported.
+removeHandlers();
+controller.abort();

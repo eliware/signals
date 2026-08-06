@@ -1,70 +1,87 @@
 import logger from '@eliware/log';
 
-// Store shutdown hooks and state per processObj for test isolation
-const shutdownHooksMap = new WeakMap();
-const shuttingDownMap = new WeakMap();
-const registeredProcesses = new WeakSet();
+const defaultSignals = ['SIGTERM', 'SIGINT', 'SIGHUP'];
+const registrations = new WeakMap();
 
-/**
- * Sets up shutdown handlers for the process.
- * @param {Object} options
- * @param {Object} [options.processObj=process] - The process object to attach handlers to.
- * @param {Object} [options.log=logger] - Logger for output.
- * @param {string[]} [options.signals=['SIGTERM', 'SIGINT', 'SIGHUP']] - Signals to listen for.
- * @param {Function} [options.shutdownHook] - Optional hook to call during shutdown.
- * @returns {Object} { shutdown, getShuttingDown }
- */
+const normalizeSignals = (signals) => {
+    if (signals === undefined) return defaultSignals;
+    if (!Array.isArray(signals) || signals.some(signal => typeof signal !== 'string')) {
+        throw new TypeError('signals must be an array of signal names');
+    }
+    return [...new Set(signals)];
+};
+
 export const registerSignals = ({
     processObj = process,
     log = logger,
-    signals = ['SIGTERM', 'SIGINT', 'SIGHUP'],
-    shutdownHook
+    signals,
+    shutdownHook,
+    exitCode = 0,
+    exit = true,
+    signal
 } = {}) => {
-    if (!shutdownHooksMap.has(processObj)) shutdownHooksMap.set(processObj, []);
-    if (!shuttingDownMap.has(processObj)) shuttingDownMap.set(processObj, false);
-    if (shutdownHook) shutdownHooksMap.get(processObj).push(shutdownHook);
-
-    const getShuttingDown = () => shuttingDownMap.get(processObj);
-    const shutdown = async (signal) => {
-        if (shuttingDownMap.get(processObj)) {
-            log.warn(`Received ${signal} again, but already shutting down.`);
-            return;
-        }
-        shuttingDownMap.set(processObj, true);
-        log.debug(`Received ${signal}. Shutting down gracefully...`);
-        try {
-            for (const hook of shutdownHooksMap.get(processObj)) {
-                await hook(signal);
-            }
-        } catch (err) {
-            log.error('Error during shutdown hook:', err);
-        }
-        processObj.exit(0);
-    };
-    if (!registeredProcesses.has(processObj)) {
-        signals.forEach(signal => {
-            processObj.on(signal, () => shutdown(signal));
-        });
-        // Also handle process exit and beforeExit
-        const runAllHooksOnExit = async (code) => {
-            if (!shuttingDownMap.get(processObj)) {
-                shuttingDownMap.set(processObj, true);
-                log.debug(`Process exiting (code ${code}). Running shutdown hooks...`);
-                try {
-                    for (const hook of shutdownHooksMap.get(processObj)) {
-                        await hook('exit');
-                    }
-                } catch (err) {
-                    log.error('Error during shutdown hook:', err);
-                }
-            }
-        };
-        processObj.on('exit', runAllHooksOnExit);
-        processObj.on('beforeExit', runAllHooksOnExit);
-        log.debug('Registered Handlers', { signals: signals.join(', ') });
-        registeredProcesses.add(processObj);
+    const selected = normalizeSignals(signals);
+    let registration = registrations.get(processObj);
+    if (registration) {
+        if (shutdownHook) registration.hooks.push(shutdownHook);
+        return registration.api;
     }
-    return { shutdown, getShuttingDown };
+
+    const hooks = shutdownHook ? [shutdownHook] : [];
+    let shuttingDown = false;
+    let shutdownPromise;
+    let removed = false;
+    const listeners = new Map();
+
+    const runHooks = async (receivedSignal) => {
+        for (const hook of hooks) {
+            try { await hook(receivedSignal); }
+            catch (err) { log.error('Error during shutdown hook:', err); }
+        }
+    };
+    const shutdown = async (receivedSignal = 'manual') => {
+        if (shutdownPromise) {
+            log.warn(`Received ${receivedSignal} again, but already shutting down.`);
+            return shutdownPromise;
+        }
+        shuttingDown = true;
+        log.debug(`Received ${receivedSignal}. Shutting down gracefully...`);
+        shutdownPromise = runHooks(receivedSignal).then(() => {
+            if (exit && typeof processObj.exit === 'function') processObj.exit(exitCode);
+        });
+        return shutdownPromise;
+    };
+    const onExit = (code) => {
+        if (shuttingDown) return;
+        shuttingDown = true;
+        log.debug(`Process exiting (code ${code}). Running shutdown hooks...`);
+        void runHooks('exit');
+    };
+    for (const name of selected) {
+        const listener = () => { void shutdown(name); };
+        listeners.set(name, listener);
+        processObj.on(name, listener);
+    }
+    processObj.on('exit', onExit);
+    processObj.on('beforeExit', onExit);
+
+    const removeHandlers = () => {
+        if (removed) return;
+        removed = true;
+        if (typeof processObj.off !== 'function') return;
+        for (const [name, listener] of listeners) processObj.off(name, listener);
+        processObj.off('exit', onExit);
+        processObj.off('beforeExit', onExit);
+        registrations.delete(processObj);
+    };
+    registration = { hooks, api: { shutdown, getShuttingDown: () => shuttingDown, removeHandlers, get removed() { return removed; } } };
+    registrations.set(processObj, registration);
+    if (signal) {
+        if (signal.aborted) removeHandlers();
+        else signal.addEventListener('abort', removeHandlers, { once: true });
+    }
+    log.debug('Registered Handlers', { signals: selected.join(', ') });
+    return registration.api;
 };
 
 export default registerSignals;
