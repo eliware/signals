@@ -1,4 +1,4 @@
-import registerSignalsDefault, { registerSignals as registerSignalsNamed } from './index.mjs';
+import registerSignalsDefault, { registerSignals as registerSignalsNamed } from '../index.mjs';
 import { jest, test, expect, beforeEach, describe } from '@jest/globals';
 
 const makeProcess = () => ({ on: jest.fn(), off: jest.fn(), exit: jest.fn() });
