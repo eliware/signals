@@ -9,12 +9,16 @@
 ## Table of Contents
 
 - [Features](#features)
+- [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
   - [ESM Example](#esm-example)
   - [Shutdown Hooks Example](#shutdown-hooks-example)
 - [API](#api)
 - [TypeScript](#typescript)
+- [Errors / Troubleshooting](#errors--troubleshooting)
+- [Development](#development)
+- [Security](#security)
 - [License](#license)
 
 ## Features
@@ -29,6 +33,11 @@
 - Simple ESM API
 - TypeScript type definitions included
 - Well-tested with Jest
+
+## Requirements
+
+- Node.js 26 or newer
+- A process-like application lifecycle that can receive shutdown signals
 
 ## Installation
 
@@ -134,6 +143,26 @@ const { shutdown, getShuttingDown } = registerSignals(options);
 //   getShuttingDown: () => boolean;
 // };
 ```
+
+## Errors / Troubleshooting
+
+Shutdown hooks run in registration order, and a failing hook is logged without preventing later hooks from running. Use `exit: false` for embedded applications and tests. Prefer explicit `shutdown()` or `beforeExit` for asynchronous cleanup because Node does not safely await arbitrary work during the `exit` event. Always call `removeHandlers()` when a registration is no longer needed.
+
+## Development
+
+```bash
+npm test
+npm run test:gaps
+npm run lint
+npm run typecheck
+npm run pack
+```
+
+Examples are safe to inspect and should be run only in a controlled process when testing signal behavior.
+
+## Security
+
+Do not log secrets or sensitive shutdown context. Keep cleanup hooks bounded and avoid relying on asynchronous work after the process has entered the `exit` event.
 
 ## Support
 
