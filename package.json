@@ -1,7 +1,7 @@
 {
     "name": "@eliware/signals",
     "type": "module",
-    "version": "1.1.5",
+    "version": "1.1.6",
     "description": "Graceful shutdown signal handler utility for Node.js",
     "types": "index.d.ts",
     "files": [
