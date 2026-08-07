@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.1.5 — August 7, 2026
+
+- Updated `@eliware/log` to `^1.1.10`.
+
 ## 1.1.3 — 2026-08-06
 
 - Modernized graceful-shutdown lifecycle handling.
