@@ -51,30 +51,30 @@ export const registerSignals = ({
         });
         return shutdownPromise;
     };
-    const onExit = (code) => {
+    const onBeforeExit = (code) => {
         if (shuttingDown) return;
         shuttingDown = true;
         log.debug(`Process exiting (code ${code}). Running shutdown hooks...`);
-        void runHooks('exit');
+        void runHooks('beforeExit');
     };
     for (const name of selected) {
         const listener = () => { void shutdown(name); };
         listeners.set(name, listener);
         processObj.on(name, listener);
     }
-    processObj.on('exit', onExit);
-    processObj.on('beforeExit', onExit);
+    processObj.on('beforeExit', onBeforeExit);
 
     const removeHandlers = () => {
         if (removed) return;
         removed = true;
-        if (typeof processObj.off !== 'function') return;
-        for (const [name, listener] of listeners) processObj.off(name, listener);
-        processObj.off('exit', onExit);
-        processObj.off('beforeExit', onExit);
-        registrations.delete(processObj);
+        if (typeof processObj.off === 'function') {
+            for (const [name, listener] of listeners) processObj.off(name, listener);
+            processObj.off('beforeExit', onBeforeExit);
+        }
+        if (registrations.get(processObj)?.api === api) registrations.delete(processObj);
     };
-    registration = { hooks, api: { shutdown, getShuttingDown: () => shuttingDown, removeHandlers, get removed() { return removed; } } };
+    const api = { shutdown, getShuttingDown: () => shuttingDown, removeHandlers, get removed() { return removed; } };
+    registration = { hooks, api };
     registrations.set(processObj, registration);
     if (signal) {
         if (signal.aborted) removeHandlers();

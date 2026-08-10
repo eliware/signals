@@ -73,20 +73,19 @@ describe('registerSignals', () => {
     expect(mockProcess.exit).toHaveBeenCalledWith(0);
   });
 
-  test('runs hooks on exit and beforeExit only once', async () => {
+  test('runs hooks on beforeExit only once', async () => {
     const hook = jest.fn(async signal => signal);
     registerSignalsNamed({ processObj: mockProcess, log: mocklog, signals: [], shutdownHook: hook });
     await handler(mockProcess, 'beforeExit')(3);
-    await handler(mockProcess, 'exit')(0);
-    expect(hook).toHaveBeenCalledWith('exit');
+    expect(hook).toHaveBeenCalledWith('beforeExit');
     expect(hook).toHaveBeenCalledTimes(1);
     expect(mocklog.debug).toHaveBeenCalledWith('Process exiting (code 3). Running shutdown hooks...');
   });
 
-  test('exit handler logs hook errors', async () => {
+  test('beforeExit handler logs hook errors', async () => {
     const error = new Error('exit failure');
     registerSignalsNamed({ processObj: mockProcess, log: mocklog, signals: [], shutdownHook: async () => { throw error; } });
-    await handler(mockProcess, 'exit')(1);
+    await handler(mockProcess, 'beforeExit')(1);
     expect(mocklog.error).toHaveBeenCalledWith('Error during shutdown hook:', error);
   });
 });
@@ -97,7 +96,7 @@ test('validates signals and deduplicates custom names', () => {
   expect(() => registerSignalsNamed({ processObj: makeProcess(), signals: ['SIGTERM', 1] })).toThrow(TypeError);
   const processObj = makeProcess();
   registerSignalsNamed({ processObj, log: makeLog(), signals: ['SIGTERM', 'SIGTERM'] });
-  expect(processObj.on).toHaveBeenCalledTimes(3);
+  expect(processObj.on).toHaveBeenCalledTimes(2);
 });
 
 test('supports cleanup, abort, non-exiting shutdown, and custom exit code', async () => {
@@ -140,4 +139,12 @@ test('supports process-like objects without exit or off', async () => {
   await registration.shutdown('manual');
   registration.removeHandlers();
   expect(registration.removed).toBe(true);
+});
+
+test('allows re-registration after cleanup and cleanup without off', () => {
+  const processObj = { on: jest.fn() };
+  const first = registerSignalsNamed({ processObj, log: makeLog(), signals: [] });
+  expect(() => first.removeHandlers()).not.toThrow();
+  const second = registerSignalsNamed({ processObj, log: makeLog(), signals: [] });
+  expect(second).not.toBe(first);
 });

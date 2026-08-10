@@ -59,7 +59,7 @@ const { shutdown, getShuttingDown } = registerSignals({ log });
 
 ### Shutdown Hooks Example
 
-You can call `registerSignals` multiple times to add async shutdown hooks. All hooks will be run (in order of registration) when a signal is received or the process exits (via `exit` or `beforeExit`).
+You can call `registerSignals` multiple times to add async shutdown hooks. All hooks will be run (in order of registration) when a signal is received or Node emits `beforeExit`.
 
 ```js
 // Simulate a resource that needs cleanup (e.g., database connection)
@@ -111,7 +111,7 @@ An object with:
 - `removeHandlers(): void` — Detaches registered listeners; safe to call repeatedly.
 - `removed: boolean` — Indicates whether cleanup has completed.
 
-> **Shutdown hooks will run on signal, `process.exit`, or `beforeExit`. Node cannot safely perform arbitrary asynchronous work during the `exit` event; prefer explicit `shutdown()` or `beforeExit` for async cleanup.
+> **Shutdown hooks run on signals, explicit `shutdown()`, or `beforeExit`. They are intentionally not run from Node’s `exit` event because asynchronous cleanup cannot complete reliably there.
 
 ## TypeScript
 
@@ -128,7 +128,7 @@ const options: RegisterSignalsOptions = {
   shutdownHook: async (signal) => { /* ... */ } // optional
 };
 
-const { shutdown, getShuttingDown } = registerSignals(options);
+const { shutdown, getShuttingDown, removeHandlers, removed } = registerSignals(options);
 
 // Types:
 // interface RegisterSignalsOptions {
@@ -146,7 +146,7 @@ const { shutdown, getShuttingDown } = registerSignals(options);
 
 ## Errors / Troubleshooting
 
-Shutdown hooks run in registration order, and a failing hook is logged without preventing later hooks from running. Use `exit: false` for embedded applications and tests. Prefer explicit `shutdown()` or `beforeExit` for asynchronous cleanup because Node does not safely await arbitrary work during the `exit` event. Always call `removeHandlers()` when a registration is no longer needed.
+Shutdown hooks run in registration order, and a failing hook is logged without preventing later hooks from running. Use `exit: false` for embedded applications and tests. Prefer explicit `shutdown()` or `beforeExit` for asynchronous cleanup. Always call `removeHandlers()` when a registration is no longer needed.
 
 ## Development
 
