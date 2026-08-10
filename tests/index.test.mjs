@@ -29,10 +29,16 @@ describe('registerSignals', () => {
 
   test('accepts custom signals and only registers handlers once per process', () => {
     registerSignalsNamed({ processObj: mockProcess, log: mocklog, signals: ['USR1'] });
-    registerSignalsNamed({ processObj: mockProcess, log: mocklog, signals: ['USR2'] });
+    registerSignalsNamed({ processObj: mockProcess, log: mocklog, signals: ['USR1'] });
     expect(mockProcess.on).toHaveBeenCalledWith('USR1', expect.any(Function));
     expect(mockProcess.on).not.toHaveBeenCalledWith('USR2', expect.any(Function));
     expect(mocklog.debug).toHaveBeenCalledWith('Registered Handlers', { signals: 'USR1' });
+  });
+
+  test('rejects conflicting repeated lifecycle options', () => {
+    registerSignalsNamed({ processObj: mockProcess, log: mocklog, signals: ['USR1'] });
+    expect(() => registerSignalsNamed({ processObj: mockProcess, log: makeLog(), signals: ['USR1'] })).toThrow(TypeError);
+    expect(() => registerSignalsNamed({ processObj: mockProcess, log: mocklog, signals: ['USR2'] })).toThrow(TypeError);
   });
 
   test('runs hooks, exits, and reports repeated shutdown', async () => {
@@ -139,6 +145,26 @@ test('supports process-like objects without exit or off', async () => {
   await registration.shutdown('manual');
   registration.removeHandlers();
   expect(registration.removed).toBe(true);
+});
+
+
+test('does not rerun hooks after beforeExit', async () => {
+  const processObj = makeProcess();
+  const hook = jest.fn();
+  const registration = registerSignalsNamed({ processObj, log: makeLog(), signals: [], shutdownHook: hook });
+  await handler(processObj, 'beforeExit')(0);
+  await registration.shutdown('manual');
+  await handler(processObj, 'beforeExit')(0);
+  expect(hook).toHaveBeenCalledTimes(1);
+});
+
+test('removes registration only when cleanup belongs to current API', () => {
+  const processObj = makeProcess();
+  const first = registerSignalsNamed({ processObj, log: makeLog(), signals: [] });
+  first.removeHandlers();
+  const second = registerSignalsNamed({ processObj, log: makeLog(), signals: [] });
+  expect(() => first.removeHandlers()).not.toThrow();
+  expect(second.removed).toBe(false);
 });
 
 test('allows re-registration after cleanup and cleanup without off', () => {

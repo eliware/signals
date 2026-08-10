@@ -59,7 +59,7 @@ const { shutdown, getShuttingDown } = registerSignals({ log });
 
 ### Shutdown Hooks Example
 
-You can call `registerSignals` multiple times to add async shutdown hooks. All hooks will be run (in order of registration) when a signal is received or Node emits `beforeExit`.
+You can call `registerSignals` multiple times to add async shutdown hooks. All hooks will be run (in order of registration) when a signal is received or Node emits `beforeExit`. Repeated registrations must use the same lifecycle options (`log`, `signals`, `exitCode`, `exit`, and `signal`); conflicting options throw `TypeError`.
 
 ```js
 // Simulate a resource that needs cleanup (e.g., database connection)
@@ -94,7 +94,7 @@ Registers shutdown handlers for the specified signals and allows registering asy
 
 #### Options
 
-- `processObj` (default: `process`): The process object to attach handlers to.
+- `processObj` (default: `process`): Process-like object to attach handlers to; must provide `on`, with optional `off` and `exit`.
 - `log` (default: `@eliware/log`): Logger for output. Should have `debug`, `info`, `warn`, and `error` methods.
 - `signals` (default: `[ 'SIGTERM', 'SIGINT', 'SIGHUP' ]`): Array of signals to listen for.
 - `shutdownHook` (optional): A sync or async function to run during shutdown. Multiple registrations add hooks in order.

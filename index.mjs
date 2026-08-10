@@ -11,18 +11,26 @@ const normalizeSignals = (signals) => {
     return [...new Set(signals)];
 };
 
-export const registerSignals = ({
-    processObj = process,
-    log = logger,
-    signals,
-    shutdownHook,
-    exitCode = 0,
-    exit = true,
-    signal
-} = {}) => {
+export const registerSignals = (options = {}) => {
+    const {
+        processObj = process,
+        log = logger,
+        signals,
+        shutdownHook,
+        exitCode = 0,
+        exit = true,
+        signal
+    } = options;
     const selected = normalizeSignals(signals);
     let registration = registrations.get(processObj);
     if (registration) {
+        const conflicts = (Object.hasOwn(options, 'log') && registration.log !== log) ||
+            (Object.hasOwn(options, 'signals') && (registration.signals.length !== selected.length ||
+                !registration.signals.every((name, index) => name === selected[index]))) ||
+            (Object.hasOwn(options, 'exitCode') && registration.exitCode !== exitCode) ||
+            (Object.hasOwn(options, 'exit') && registration.exit !== exit) ||
+            (Object.hasOwn(options, 'signal') && registration.signal !== signal);
+        if (conflicts) throw new TypeError('Repeated registration must use the same lifecycle options');
         if (shutdownHook) registration.hooks.push(shutdownHook);
         return registration.api;
     }
@@ -32,6 +40,7 @@ export const registerSignals = ({
     let shutdownPromise;
     let removed = false;
     const listeners = new Map();
+    let abortHandler;
 
     const runHooks = async (receivedSignal) => {
         for (const hook of hooks) {
@@ -55,7 +64,7 @@ export const registerSignals = ({
         if (shuttingDown) return;
         shuttingDown = true;
         log.debug(`Process exiting (code ${code}). Running shutdown hooks...`);
-        void runHooks('beforeExit');
+        shutdownPromise = runHooks('beforeExit');
     };
     for (const name of selected) {
         const listener = () => { void shutdown(name); };
@@ -71,14 +80,20 @@ export const registerSignals = ({
             for (const [name, listener] of listeners) processObj.off(name, listener);
             processObj.off('beforeExit', onBeforeExit);
         }
+        if (signal && abortHandler && typeof signal.removeEventListener === 'function') {
+            signal.removeEventListener('abort', abortHandler);
+        }
         if (registrations.get(processObj)?.api === api) registrations.delete(processObj);
     };
     const api = { shutdown, getShuttingDown: () => shuttingDown, removeHandlers, get removed() { return removed; } };
-    registration = { hooks, api };
+    registration = { hooks, api, log, exitCode, exit, signal, signals: selected };
     registrations.set(processObj, registration);
     if (signal) {
         if (signal.aborted) removeHandlers();
-        else signal.addEventListener('abort', removeHandlers, { once: true });
+        else {
+            abortHandler = removeHandlers;
+            signal.addEventListener('abort', abortHandler, { once: true });
+        }
     }
     log.debug('Registered Handlers', { signals: selected.join(', ') });
     return registration.api;
