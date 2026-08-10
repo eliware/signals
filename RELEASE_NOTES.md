@@ -1,9 +1,17 @@
 # Release Notes
 
+## 1.1.7 — August 10, 2026
+
+- Updated `@eliware/log` to 1.1.12.
+- Validated injected logger methods and aligned TypeScript logger/process-like types.
+- Completed 100% statements, branches, functions, and lines coverage.
+- Fixed the runnable example import path and made it non-exiting.
+
+
 ## 1.1.6 — 2026-08-07
 
 - Standardized package layout, validation scripts, TypeScript checking, CI, and package contents.
-- Updated `@eliware/log` to 1.1.11.
+- Updated `@eliware/log` to 1.1.12.
 - Expanded operational, troubleshooting, development, and security documentation.
 
 ## 1.1.5 — August 7, 2026
