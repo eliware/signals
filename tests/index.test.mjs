@@ -97,6 +97,11 @@ describe('registerSignals', () => {
 });
 
 
+test('validates the injected logger contract', () => {
+  expect(() => registerSignalsNamed({ processObj: makeProcess(), log: {} })).toThrow(TypeError);
+  expect(() => registerSignalsNamed({ processObj: makeProcess(), log: { debug: jest.fn(), warn: jest.fn() } })).toThrow('log.error must be a function');
+});
+
 test('validates signals and deduplicates custom names', () => {
   expect(() => registerSignalsNamed({ processObj: makeProcess(), signals: 'SIGTERM' })).toThrow(TypeError);
   expect(() => registerSignalsNamed({ processObj: makeProcess(), signals: ['SIGTERM', 1] })).toThrow(TypeError);

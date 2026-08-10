@@ -95,7 +95,7 @@ Registers shutdown handlers for the specified signals and allows registering asy
 #### Options
 
 - `processObj` (default: `process`): Process-like object to attach handlers to; must provide `on`, with optional `off` and `exit`.
-- `log` (default: `@eliware/log`): Logger for output. Should have `debug`, `info`, `warn`, and `error` methods.
+- `log` (default: `@eliware/log`): Logger for output. Must have `debug`, `warn`, and `error` methods; invalid loggers throw `TypeError`. Custom loggers are responsible for their own error serialization/redaction.
 - `signals` (default: `[ 'SIGTERM', 'SIGINT', 'SIGHUP' ]`): Array of signals to listen for.
 - `shutdownHook` (optional): A sync or async function to run during shutdown. Multiple registrations add hooks in order.
 - `exitCode` (default: `0`): Exit code used after signal-driven shutdown.
@@ -123,7 +123,7 @@ import registerSignals, { RegisterSignalsOptions } from '@eliware/signals';
 // Optionally provide options
 const options: RegisterSignalsOptions = {
   processObj: process, // optional, defaults to process
-  log: myLogger,       // optional, defaults to @eliware/log
+  log: myLogger,       // optional; must provide debug, warn, and error
   signals: ['SIGTERM', 'SIGINT', 'SIGHUP'], // optional, defaults as shown
   shutdownHook: async (signal) => { /* ... */ } // optional
 };
@@ -133,7 +133,7 @@ const { shutdown, getShuttingDown, removeHandlers, removed } = registerSignals(o
 // Types:
 // interface RegisterSignalsOptions {
 //   processObj?: NodeJS.Process;
-//   log?: typeof log;
+//   log?: SignalsLogger;
 //   signals?: string[];
 //   shutdownHook?: (signal: string) => Promise<void>;
 // }
@@ -162,7 +162,7 @@ Examples are safe to inspect and should be run only in a controlled process when
 
 ## Security
 
-Do not log secrets or sensitive shutdown context. Keep cleanup hooks bounded and avoid relying on asynchronous work after the process has entered the `exit` event.
+Set `LOG_LEVEL=debug` to see diagnostic messages from the default logger. Do not log secrets or sensitive shutdown context. Keep cleanup hooks bounded and avoid relying on asynchronous work after the process has entered the `exit` event.
 
 ## Support
 

@@ -3,6 +3,14 @@ import logger from '@eliware/log';
 const defaultSignals = ['SIGTERM', 'SIGINT', 'SIGHUP'];
 const registrations = new WeakMap();
 
+const validateLogger = (log) => {
+    for (const method of ['debug', 'warn', 'error']) {
+        if (typeof log?.[method] !== 'function') {
+            throw new TypeError(`log.${method} must be a function`);
+        }
+    }
+};
+
 const normalizeSignals = (signals) => {
     if (signals === undefined) return defaultSignals;
     if (!Array.isArray(signals) || signals.some(signal => typeof signal !== 'string')) {
@@ -21,6 +29,7 @@ export const registerSignals = (options = {}) => {
         exit = true,
         signal
     } = options;
+    validateLogger(log);
     const selected = normalizeSignals(signals);
     let registration = registrations.get(processObj);
     if (registration) {
