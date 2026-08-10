@@ -92,7 +92,7 @@ export const registerSignals = (options = {}) => {
         if (signal && abortHandler && typeof signal.removeEventListener === 'function') {
             signal.removeEventListener('abort', abortHandler);
         }
-        if (registrations.get(processObj)?.api === api) registrations.delete(processObj);
+        registrations.delete(processObj);
     };
     const api = { shutdown, getShuttingDown: () => shuttingDown, removeHandlers, get removed() { return removed; } };
     registration = { hooks, api, log, exitCode, exit, signal, signals: selected };

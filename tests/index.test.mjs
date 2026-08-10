@@ -39,6 +39,9 @@ describe('registerSignals', () => {
     registerSignalsNamed({ processObj: mockProcess, log: mocklog, signals: ['USR1'] });
     expect(() => registerSignalsNamed({ processObj: mockProcess, log: makeLog(), signals: ['USR1'] })).toThrow(TypeError);
     expect(() => registerSignalsNamed({ processObj: mockProcess, log: mocklog, signals: ['USR2'] })).toThrow(TypeError);
+    expect(() => registerSignalsNamed({ processObj: mockProcess, log: mocklog, signals: ['USR1'], exitCode: 1 })).toThrow(TypeError);
+    expect(() => registerSignalsNamed({ processObj: mockProcess, log: mocklog, signals: ['USR1'], exit: false })).toThrow(TypeError);
+    expect(() => registerSignalsNamed({ processObj: mockProcess, log: mocklog, signals: ['USR1'], signal: new AbortController().signal })).toThrow(TypeError);
   });
 
   test('runs hooks, exits, and reports repeated shutdown', async () => {
