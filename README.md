@@ -24,7 +24,7 @@
 ## Features
 
 - Register handlers for process signals (e.g., `SIGTERM`, `SIGINT`, `SIGHUP`)
-- Register async shutdown hooks to run on signal or process exit
+- Register async shutdown hooks to run on signals, explicit shutdown, or `beforeExit`
 - Customizable logger and process object
 - Idempotent registration with repeat-safe listener cleanup
 - AbortSignal support for lifecycle-managed applications
@@ -58,6 +58,11 @@ const { shutdown, getShuttingDown } = registerSignals({ log });
 
 
 ### Shutdown Hooks Example
+
+```js
+import log from '@eliware/log';
+import registerSignals from '@eliware/signals';
+```
 
 You can call `registerSignals` multiple times to add async shutdown hooks. All hooks will be run (in order of registration) when a signal is received or Node emits `beforeExit`. Repeated registrations must use the same lifecycle options (`log`, `signals`, `exitCode`, `exit`, and `signal`); conflicting options throw `TypeError`.
 
@@ -132,16 +137,16 @@ const { shutdown, getShuttingDown, removeHandlers, removed } = registerSignals(o
 
 // Types:
 // interface RegisterSignalsOptions {
-//   processObj?: NodeJS.Process;
+//   processObj?: ProcessLike;
 //   log?: SignalsLogger;
-//   signals?: string[];
-//   shutdownHook?: (signal: string) => Promise<void>;
+//   signals?: NodeSignal[];
+//   shutdownHook?: (signal: string) => void | Promise<void>;
+//   exitCode?: number;
+//   exit?: boolean;
+//   signal?: AbortSignal;
 // }
 //
-// function registerSignals(options?: RegisterSignalsOptions): {
-//   shutdown: (signal: string) => Promise<void>;
-//   getShuttingDown: () => boolean;
-// };
+// function registerSignals(options?: RegisterSignalsOptions): SignalsRegistration;
 ```
 
 ## Errors / Troubleshooting

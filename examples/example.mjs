@@ -7,6 +7,7 @@ const { shutdown, getShuttingDown, removeHandlers } = registerSignals({
   signals: ['SIGTERM', 'SIGINT'],
   signal: controller.signal,
   exitCode: 0,
+  exit: false,
 });
 
 console.log(`Shutdown handlers ready: ${getShuttingDown()}`);
