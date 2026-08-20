@@ -43,3 +43,7 @@ Maintain 100% test coverage without Istanbul ignore directives. Add or update te
 - Keep `.agentx*`, coverage output, and temporary test artifacts ignored.
 - Avoid unnecessary dependency changes.
 - Do not push changes unless explicitly requested.
+- Do not over-engineer simple tasks.
+- Do not guess when confused.
+- Do not make random, pointless changes.
+- Check your own work before saying you're done.
