@@ -20,6 +20,9 @@ const normalizeSignals = (signals) => {
 };
 
 export const registerSignals = (options = {}) => {
+    if (options === null || typeof options !== 'object') {
+        throw new TypeError('options must be an object');
+    }
     const {
         processObj = process,
         log = logger,
@@ -29,6 +32,15 @@ export const registerSignals = (options = {}) => {
         exit = true,
         signal
     } = options;
+    if (!processObj || typeof processObj.on !== 'function') {
+        throw new TypeError('processObj.on must be a function');
+    }
+    if (shutdownHook !== undefined && typeof shutdownHook !== 'function') {
+        throw new TypeError('shutdownHook must be a function');
+    }
+    if (signal !== undefined && (!signal || typeof signal.addEventListener !== 'function')) {
+        throw new TypeError('signal must provide addEventListener');
+    }
     validateLogger(log);
     const selected = normalizeSignals(signals);
     let registration = registrations.get(processObj);

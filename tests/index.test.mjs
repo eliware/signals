@@ -15,8 +15,15 @@ describe('registerSignals', () => {
   });
 
   test('uses defaults when options are omitted', () => {
-    const { getShuttingDown } = registerSignalsNamed();
-    expect(getShuttingDown()).toBe(false);
+    const registration = registerSignalsNamed({ processObj: mockProcess, log: mocklog });
+    expect(registration.getShuttingDown()).toBe(false);
+    registration.removeHandlers();
+  });
+
+  test('uses default process and logger', () => {
+    const registration = registerSignalsNamed();
+    expect(registration.getShuttingDown()).toBe(false);
+    registration.removeHandlers();
   });
 
   test('supports named and default exports', () => {
@@ -103,6 +110,13 @@ describe('registerSignals', () => {
 test('validates the injected logger contract', () => {
   expect(() => registerSignalsNamed({ processObj: makeProcess(), log: {} })).toThrow(TypeError);
   expect(() => registerSignalsNamed({ processObj: makeProcess(), log: { debug: jest.fn(), warn: jest.fn() } })).toThrow('log.error must be a function');
+});
+
+test('validates lifecycle inputs', () => {
+  expect(() => registerSignalsNamed(null)).toThrow('options must be an object');
+  expect(() => registerSignalsNamed({ processObj: {}, log: makeLog() })).toThrow('processObj.on must be a function');
+  expect(() => registerSignalsNamed({ processObj: makeProcess(), log: makeLog(), shutdownHook: true })).toThrow('shutdownHook must be a function');
+  expect(() => registerSignalsNamed({ processObj: makeProcess(), log: makeLog(), signal: {} })).toThrow('signal must provide addEventListener');
 });
 
 test('validates signals and deduplicates custom names', () => {
