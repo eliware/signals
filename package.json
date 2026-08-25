@@ -2,12 +2,16 @@
     "name": "@eliware/signals",
     "type": "module",
     "version": "1.1.7",
+    "engines": {
+        "node": ">=26"
+    },
     "description": "Graceful shutdown signal handler utility for Node.js",
     "types": "index.d.ts",
     "files": [
         "index.mjs",
         "index.d.ts",
         "README.md",
+        "RELEASE_NOTES.md",
         "LICENSE",
         "examples"
     ],
@@ -18,9 +22,8 @@
         }
     },
     "scripts": {
-        "test": "npx --node-options=\"--experimental-vm-modules --no-warnings\" jest --detectOpenHandles --silent --coverage --coverageReporters=text --coverageReporters=json-summary",
-        "test:gaps": "npm test && node scripts/check-coverage.mjs",
-        "lint": "npx oxlint .",
+        "test": "eliware-test",
+        "lint": "eliware-test --lint",
         "typecheck": "tsc --project tsconfig.json",
         "pack": "npm pack --dry-run"
     },
@@ -49,16 +52,12 @@
         "url": "https://github.com/eliware/signals/issues"
     },
     "homepage": "https://github.com/eliware/signals#readme",
-    "devDependencies": {
-        "jest": "^30.4.2",
-        "typescript": "^7.0.2"
+    "publishConfig": {
+        "access": "public"
     },
-    "jest": {
-        "testEnvironment": "node",
-        "testMatch": [
-            "**/?(*.)+(spec|test).[jt]s?(x)",
-            "**/?(*.)+(spec|test).mjs"
-        ]
+    "devDependencies": {
+        "@eliware/test": "^2.0.0",
+        "typescript": "^7.0.2"
     },
     "dependencies": {
         "@eliware/log": "^1.1.12"

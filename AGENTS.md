@@ -23,7 +23,9 @@ Run before committing:
 ```bash
 npm test
 npm run lint
-npm run test:gaps
+npm run typecheck
+npm audit --omit=dev --audit-level=moderate
+npm run pack
 ```
 
 Maintain 100% test coverage without Istanbul ignore directives. Add or update tests for every behavior change.

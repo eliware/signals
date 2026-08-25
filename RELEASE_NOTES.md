@@ -1,5 +1,15 @@
 # Release Notes
 
+## 2.0.0 — Unreleased
+
+- Modernized testing and linting on the shared `@eliware/test` harness.
+- Added Node.js `>=26` engine metadata, public publish configuration, and
+  package inclusion of release notes.
+- Added Ubuntu and Windows CI validation for main pushes, pull requests, and
+  `v*` tags, with production dependency auditing and a tag-gated publish job.
+- Breaking: development commands now use the shared harness; consumers must
+  continue using the documented ESM API and Node.js 26 or newer.
+
 ## 1.1.7 — August 10, 2026
 
 - Updated `@eliware/log` to 1.1.12.

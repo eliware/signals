@@ -32,11 +32,11 @@
 - Configurable exit code and optional non-exiting mode
 - Simple ESM API
 - TypeScript type definitions included
-- Well-tested with Jest
+- Well-tested with the shared `@eliware/test` harness
 
 ## Requirements
 
-- Node.js 26 or newer
+- Node.js 26 or newer (`engines.node: >=26`)
 - A process-like application lifecycle that can receive shutdown signals
 
 ## Installation
@@ -157,11 +157,15 @@ Shutdown hooks run in registration order, and a failing hook is logged without p
 
 ```bash
 npm test
-npm run test:gaps
 npm run lint
 npm run typecheck
+npm audit --omit=dev --audit-level=moderate
 npm run pack
 ```
+
+`npm test` and `npm run lint` use the shared `@eliware/test` harness. The
+baseline test command reports and fails on any statement, branch, function, or
+line coverage gap in the in-scope production logic.
 
 Examples are safe to inspect and should be run only in a controlled process when testing signal behavior.
 
