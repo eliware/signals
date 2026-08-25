@@ -1,6 +1,6 @@
 # Release Notes
 
-## 2.0.0 — Unreleased
+## 2.0.0 — 2026-08-25
 
 - Modernized testing and linting on the shared `@eliware/test` harness.
 - Updated the runtime logger dependency to `@eliware/log` 2.0.0.
@@ -18,7 +18,6 @@
 - Completed 100% statements, branches, functions, and lines coverage.
 - Fixed the runnable example import path and made it non-exiting.
 
-
 ## 1.1.6 — 2026-08-07
 
 - Standardized package layout, validation scripts, TypeScript checking, CI, and package contents.
@@ -28,6 +27,10 @@
 ## 1.1.5 — August 7, 2026
 
 - Updated `@eliware/log` to `^1.1.10`.
+
+## 1.1.4 — 2026-08-06
+
+- Added `AGENTS.md` with development conventions, lifecycle guidance, validation commands, API compatibility requirements, and release workflow rules.
 
 ## 1.1.3 — 2026-08-06
 
@@ -50,7 +53,3 @@
 ## 1.1.1 — 2025-12-09
 
 - Refreshed package metadata, dependencies, and lockfile.
-
-## 1.1.4 — 2026-08-06
-
-- Added `AGENTS.md` with development conventions, lifecycle guidance, validation commands, API compatibility requirements, and release workflow rules.
