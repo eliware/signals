@@ -3,6 +3,7 @@
 ## 2.0.0 — Unreleased
 
 - Modernized testing and linting on the shared `@eliware/test` harness.
+- Updated the runtime logger dependency to `@eliware/log` 2.0.0.
 - Added Node.js `>=26` engine metadata, public publish configuration, and
   package inclusion of release notes.
 - Added Ubuntu and Windows CI validation for main pushes, pull requests, and

@@ -60,6 +60,6 @@
         "typescript": "^7.0.2"
     },
     "dependencies": {
-        "@eliware/log": "^1.1.12"
+        "@eliware/log": "^2.0.0"
     }
 }
