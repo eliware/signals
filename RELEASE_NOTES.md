@@ -1,5 +1,14 @@
 # Release Notes
 
+## 2.1.0 — September 2, 2026
+
+- Decomposed the signal lifecycle implementation into focused root modules for
+  defaults, validation, registration, shutdown, handlers, and cleanup.
+- Added matching focused tests while retaining cross-cutting public API tests.
+- Hardened lifecycle validation, asynchronous `beforeExit` handling, default
+  signal isolation, and package contents.
+- Updated `@eliware/log` to 2.1.0 and `@eliware/test` to 2.3.1.
+
 ## 2.0.0 — 2026-08-25
 
 - Modernized testing and linting on the shared `@eliware/test` harness.

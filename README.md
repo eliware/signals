@@ -14,6 +14,7 @@
 - [Usage](#usage)
   - [ESM Example](#esm-example)
   - [Shutdown Hooks Example](#shutdown-hooks-example)
+  - [Operations](#operations)
 - [API](#api)
 - [TypeScript](#typescript)
 - [Errors / Troubleshooting](#errors--troubleshooting)
@@ -51,9 +52,16 @@ npm install @eliware/signals
 
 ```js
 import log from '@eliware/log';
-import registerSignals from '@eliware/signals'; // Default export
-// or: import { registerSignals } from '@eliware/signals';
-const { shutdown, getShuttingDown } = registerSignals({ log });
+import registerSignals from '@eliware/signals';
+
+const { shutdown, getShuttingDown, removeHandlers } = registerSignals({
+  log,
+  exit: false,
+});
+
+console.log(`Shutdown handlers ready: ${getShuttingDown()}`);
+await shutdown('manual');
+removeHandlers();
 ```
 
 
@@ -64,7 +72,11 @@ import log from '@eliware/log';
 import registerSignals from '@eliware/signals';
 ```
 
-You can call `registerSignals` multiple times to add async shutdown hooks. All hooks will be run (in order of registration) when a signal is received or Node emits `beforeExit`. Repeated registrations must use the same lifecycle options (`log`, `signals`, `exitCode`, `exit`, and `signal`); conflicting options throw `TypeError`.
+You can call `registerSignals` multiple times to add async shutdown hooks. All
+hooks run in registration order when a signal is received, `shutdown()` is
+called, or Node emits `beforeExit`. Repeated registrations must use the same
+lifecycle options (`log`, `signals`, `exitCode`, `exit`, and `signal`);
+conflicting options throw `TypeError`.
 
 ```js
 // Simulate a resource that needs cleanup (e.g., database connection)
@@ -103,8 +115,8 @@ Registers shutdown handlers for the specified signals and allows registering asy
 - `log` (default: `@eliware/log`): Logger for output. Must have `debug`, `warn`, and `error` methods; invalid loggers throw `TypeError`. Custom loggers are responsible for their own error serialization/redaction.
 - `signals` (default: `[ 'SIGTERM', 'SIGINT', 'SIGHUP' ]`): Array of signals to listen for.
 - `shutdownHook` (optional): A sync or async function to run during shutdown. Multiple registrations add hooks in order.
-- `exitCode` (default: `0`): Exit code used after signal-driven shutdown.
-- `exit` (default: `true`): Set to `false` for embedded applications and tests that should not call `process.exit`.
+- `exitCode` (default: `0`): Finite integer exit code used after signal-driven shutdown.
+- `exit` (default: `true`): Boolean. Set to `false` for embedded applications and tests that should not call `process.exit`.
 - `signal` (optional): An `AbortSignal` that removes all registered listeners when aborted.
 
 #### Returns
@@ -116,6 +128,8 @@ An object with:
 - `removeHandlers(): void` — Detaches registered listeners; safe to call repeatedly.
 - `removed: boolean` — Indicates whether cleanup has completed.
 
+Invalid options throw `TypeError` before listeners are registered.
+
 > **Shutdown hooks run on signals, explicit `shutdown()`, or `beforeExit`. They are intentionally not run from Node’s `exit` event because asynchronous cleanup cannot complete reliably there.
 
 When an injected `processObj` does not provide `off`, `removeHandlers()` remains
@@ -123,6 +137,22 @@ safe and marks the registration removed, but cannot detach listeners from that
 object. The `beforeExit` listener returns the hook promise for integrations
 that explicitly await it; Node itself does not await event-listener return
 values, so asynchronous cleanup must keep its work scheduled before exit.
+
+## Operations
+
+Signal handlers are installed for `SIGTERM`, `SIGINT`, and `SIGHUP` by default.
+Use `signals: []` to install only the `beforeExit` lifecycle hook, or provide a
+custom signal list. Signal names are deduplicated while preserving order.
+
+The first registration for a process-like object owns its lifecycle options.
+Later registrations add hooks to that same lifecycle and return the same API.
+Call `removeHandlers()` when the registration is no longer needed; it is safe
+to call repeatedly. An attached `AbortSignal` performs the same cleanup when it
+aborts.
+
+When `processObj.off` is unavailable, cleanup remains safe and marks the
+registration removed, but cannot detach listeners from that object. Prefer an
+object implementing `on`, `off`, and `exit` for complete lifecycle control.
 
 ## TypeScript
 
@@ -157,7 +187,10 @@ const { shutdown, getShuttingDown, removeHandlers, removed } = registerSignals(o
 
 ## Errors / Troubleshooting
 
-Shutdown hooks run in registration order, and a failing hook is logged without preventing later hooks from running. Use `exit: false` for embedded applications and tests. Prefer explicit `shutdown()` or `beforeExit` for asynchronous cleanup. Always call `removeHandlers()` when a registration is no longer needed.
+Shutdown hooks run in registration order, and a failing hook is logged without
+preventing later hooks from running. Use `exit: false` for embedded applications
+and tests. Prefer explicit `shutdown()` when the caller must await cleanup.
+Always call `removeHandlers()` when a registration is no longer needed.
 
 ## Development
 
