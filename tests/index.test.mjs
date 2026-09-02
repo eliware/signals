@@ -117,6 +117,8 @@ test('validates lifecycle inputs', () => {
   expect(() => registerSignalsNamed({ processObj: {}, log: makeLog() })).toThrow('processObj.on must be a function');
   expect(() => registerSignalsNamed({ processObj: makeProcess(), log: makeLog(), shutdownHook: true })).toThrow('shutdownHook must be a function');
   expect(() => registerSignalsNamed({ processObj: makeProcess(), log: makeLog(), signal: {} })).toThrow('signal must provide addEventListener');
+  expect(() => registerSignalsNamed({ processObj: makeProcess(), log: makeLog(), exit: 'false' })).toThrow('exit must be a boolean');
+  expect(() => registerSignalsNamed({ processObj: makeProcess(), log: makeLog(), exitCode: 1.5 })).toThrow('exitCode must be a finite integer');
 });
 
 test('validates signals and deduplicates custom names', () => {

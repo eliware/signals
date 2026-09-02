@@ -9,6 +9,12 @@
     "types": "index.d.ts",
     "files": [
         "index.mjs",
+        "defaults.mjs",
+        "validation.mjs",
+        "registration.mjs",
+        "shutdown.mjs",
+        "handlers.mjs",
+        "cleanup.mjs",
         "index.d.ts",
         "README.md",
         "RELEASE_NOTES.md",
@@ -57,10 +63,10 @@
         "access": "public"
     },
     "devDependencies": {
-        "@eliware/test": "^2.0.0",
+        "@eliware/test": "^2.3.1",
         "typescript": "^7.0.2"
     },
     "dependencies": {
-        "@eliware/log": "^2.0.0"
+        "@eliware/log": "^2.1.0"
     }
 }

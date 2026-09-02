@@ -118,6 +118,12 @@ An object with:
 
 > **Shutdown hooks run on signals, explicit `shutdown()`, or `beforeExit`. They are intentionally not run from Node’s `exit` event because asynchronous cleanup cannot complete reliably there.
 
+When an injected `processObj` does not provide `off`, `removeHandlers()` remains
+safe and marks the registration removed, but cannot detach listeners from that
+object. The `beforeExit` listener returns the hook promise for integrations
+that explicitly await it; Node itself does not await event-listener return
+values, so asynchronous cleanup must keep its work scheduled before exit.
+
 ## TypeScript
 
 Type definitions are included:

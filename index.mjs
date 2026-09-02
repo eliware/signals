@@ -1,23 +1,10 @@
 import logger from '@eliware/log';
-
-const defaultSignals = ['SIGTERM', 'SIGINT', 'SIGHUP'];
-const registrations = new WeakMap();
-
-const validateLogger = (log) => {
-    for (const method of ['debug', 'warn', 'error']) {
-        if (typeof log?.[method] !== 'function') {
-            throw new TypeError(`log.${method} must be a function`);
-        }
-    }
-};
-
-const normalizeSignals = (signals) => {
-    if (signals === undefined) return defaultSignals;
-    if (!Array.isArray(signals) || signals.some(signal => typeof signal !== 'string')) {
-        throw new TypeError('signals must be an array of signal names');
-    }
-    return [...new Set(signals)];
-};
+import { defaultSignals } from './defaults.mjs';
+import { validateLogger, normalizeSignals, validateOptions, validateLifecycleOptions } from './validation.mjs';
+import { getRegistration, setRegistration } from './registration.mjs';
+import { createShutdown } from './shutdown.mjs';
+import { installHandlers } from './handlers.mjs';
+import { createCleanup } from './cleanup.mjs';
 
 export const registerSignals = (options = {}) => {
     if (options === null || typeof options !== 'object') {
@@ -32,18 +19,11 @@ export const registerSignals = (options = {}) => {
         exit = true,
         signal
     } = options;
-    if (!processObj || typeof processObj.on !== 'function') {
-        throw new TypeError('processObj.on must be a function');
-    }
-    if (shutdownHook !== undefined && typeof shutdownHook !== 'function') {
-        throw new TypeError('shutdownHook must be a function');
-    }
-    if (signal !== undefined && (!signal || typeof signal.addEventListener !== 'function')) {
-        throw new TypeError('signal must provide addEventListener');
-    }
+    validateOptions({ processObj, shutdownHook, signal });
+    validateLifecycleOptions({ exit, exitCode });
     validateLogger(log);
-    const selected = normalizeSignals(signals);
-    let registration = registrations.get(processObj);
+    const selected = normalizeSignals(signals, defaultSignals);
+    let registration = getRegistration(processObj);
     if (registration) {
         const conflicts = (Object.hasOwn(options, 'log') && registration.log !== log) ||
             (Object.hasOwn(options, 'signals') && (registration.signals.length !== selected.length ||
@@ -57,65 +37,13 @@ export const registerSignals = (options = {}) => {
     }
 
     const hooks = shutdownHook ? [shutdownHook] : [];
-    let shuttingDown = false;
-    let shutdownPromise;
-    let removed = false;
-    const listeners = new Map();
-    let abortHandler;
-
-    const runHooks = async (receivedSignal) => {
-        for (const hook of hooks) {
-            try { await hook(receivedSignal); }
-            catch (err) { log.error('Error during shutdown hook:', err); }
-        }
-    };
-    const shutdown = async (receivedSignal = 'manual') => {
-        if (shutdownPromise) {
-            log.warn(`Received ${receivedSignal} again, but already shutting down.`);
-            return shutdownPromise;
-        }
-        shuttingDown = true;
-        log.debug(`Received ${receivedSignal}. Shutting down gracefully...`);
-        shutdownPromise = runHooks(receivedSignal).then(() => {
-            if (exit && typeof processObj.exit === 'function') processObj.exit(exitCode);
-        });
-        return shutdownPromise;
-    };
-    const onBeforeExit = (code) => {
-        if (shuttingDown) return;
-        shuttingDown = true;
-        log.debug(`Process exiting (code ${code}). Running shutdown hooks...`);
-        shutdownPromise = runHooks('beforeExit');
-    };
-    for (const name of selected) {
-        const listener = () => { void shutdown(name); };
-        listeners.set(name, listener);
-        processObj.on(name, listener);
-    }
-    processObj.on('beforeExit', onBeforeExit);
-
-    const removeHandlers = () => {
-        if (removed) return;
-        removed = true;
-        if (typeof processObj.off === 'function') {
-            for (const [name, listener] of listeners) processObj.off(name, listener);
-            processObj.off('beforeExit', onBeforeExit);
-        }
-        if (signal && abortHandler && typeof signal.removeEventListener === 'function') {
-            signal.removeEventListener('abort', abortHandler);
-        }
-        registrations.delete(processObj);
-    };
-    const api = { shutdown, getShuttingDown: () => shuttingDown, removeHandlers, get removed() { return removed; } };
+    const lifecycle = createShutdown({ hooks, log, processObj, exit, exitCode });
+    const handlers = installHandlers({ processObj, signals: selected, ...lifecycle });
+    const cleanup = createCleanup({ processObj, signal, ...handlers });
+    const api = { shutdown: lifecycle.shutdown, getShuttingDown: lifecycle.getShuttingDown, removeHandlers: cleanup.removeHandlers, get removed() { return cleanup.getRemoved(); } };
     registration = { hooks, api, log, exitCode, exit, signal, signals: selected };
-    registrations.set(processObj, registration);
-    if (signal) {
-        if (signal.aborted) removeHandlers();
-        else {
-            abortHandler = removeHandlers;
-            signal.addEventListener('abort', abortHandler, { once: true });
-        }
-    }
+    setRegistration(processObj, registration);
+    cleanup.attachAbortHandler();
     log.debug('Registered Handlers', { signals: selected.join(', ') });
     return registration.api;
 };
