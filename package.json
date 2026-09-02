@@ -44,7 +44,8 @@
         "library",
         "npm",
         "node",
-        "logger"
+        "logger",
+        "abort-signal"
     ],
     "author": "Eli Sterling, eliware.org <eli@eliware.org>",
     "license": "MIT",
