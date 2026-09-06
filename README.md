@@ -1,5 +1,7 @@
 # [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)
 
+Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [examples](examples/README.md)
+
 ## @eliware/signals [![npm version](https://img.shields.io/npm/v/@eliware/signals.svg)](https://www.npmjs.com/package/@eliware/signals)[![license](https://img.shields.io/github/license/eliware/signals.svg)](LICENSE)[![build status](https://github.com/eliware/signals/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/signals/actions)
 
 > Graceful shutdown signal handler utility for Node.js
