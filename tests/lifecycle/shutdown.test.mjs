@@ -1,5 +1,5 @@
 import { expect, test, jest } from '@jest/globals';
-import { createShutdown } from '../shutdown.mjs';
+import { createShutdown } from '../../src/lifecycle/shutdown.mjs';
 
 test('runs hooks in order and isolates failures', async () => {
   const calls = [];

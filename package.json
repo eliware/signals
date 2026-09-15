@@ -8,13 +8,7 @@
     "description": "Graceful shutdown signal handler utility for Node.js",
     "types": "index.d.ts",
     "files": [
-        "index.mjs",
-        "defaults.mjs",
-        "validation.mjs",
-        "registration.mjs",
-        "shutdown.mjs",
-        "handlers.mjs",
-        "cleanup.mjs",
+        "src",
         "index.d.ts",
         "README.md",
         "RELEASE_NOTES.md",
@@ -24,7 +18,7 @@
     "exports": {
         ".": {
             "types": "./index.d.ts",
-            "import": "./index.mjs"
+            "import": "./src/index.mjs"
         }
     },
     "scripts": {
@@ -63,10 +57,10 @@
         "access": "public"
     },
     "devDependencies": {
-        "@eliware/test": "^2.3.1",
+        "@eliware/test": "^6.0.1",
         "typescript": "^7.0.2"
     },
     "dependencies": {
-        "@eliware/log": "^2.1.0"
+        "@eliware/log": "^2.4.0"
     }
 }

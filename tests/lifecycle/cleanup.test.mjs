@@ -1,5 +1,5 @@
 import { expect, test, jest } from '@jest/globals';
-import { createCleanup } from '../cleanup.mjs';
+import { createCleanup } from '../../src/lifecycle/cleanup.mjs';
 
 test('cleans up listeners and abort handling idempotently', () => {
   const processObj = { off: jest.fn() };

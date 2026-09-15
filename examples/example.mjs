@@ -1,5 +1,5 @@
 import log from '@eliware/log';
-import registerSignals from '../index.mjs';
+import registerSignals from '@eliware/signals';
 
 const controller = new AbortController();
 const { shutdown, getShuttingDown, removeHandlers } = registerSignals({

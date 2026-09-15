@@ -1,10 +1,10 @@
 import logger from '@eliware/log';
-import { defaultSignals } from './defaults.mjs';
-import { validateLogger, normalizeSignals, validateOptions, validateLifecycleOptions } from './validation.mjs';
-import { getRegistration, setRegistration } from './registration.mjs';
-import { createShutdown } from './shutdown.mjs';
-import { installHandlers } from './handlers.mjs';
-import { createCleanup } from './cleanup.mjs';
+import { defaultSignals } from './lifecycle/defaults.mjs';
+import { validateLogger, normalizeSignals, validateOptions, validateLifecycleOptions } from './lifecycle/validation.mjs';
+import { getRegistration, setRegistration } from './lifecycle/registration.mjs';
+import { createShutdown } from './lifecycle/shutdown.mjs';
+import { installHandlers } from './lifecycle/handlers.mjs';
+import { createCleanup } from './lifecycle/cleanup.mjs';
 
 export const registerSignals = (options = {}) => {
     if (options === null || typeof options !== 'object') {

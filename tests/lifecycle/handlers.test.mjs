@@ -1,5 +1,5 @@
 import { expect, test, jest } from '@jest/globals';
-import { installHandlers } from '../handlers.mjs';
+import { installHandlers } from '../../src/lifecycle/handlers.mjs';
 
 test('installs signal and beforeExit handlers', () => {
   const processObj = { on: jest.fn() };

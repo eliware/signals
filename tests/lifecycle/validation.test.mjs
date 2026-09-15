@@ -1,5 +1,5 @@
 import { expect, test, jest } from '@jest/globals';
-import { normalizeSignals, validateLogger, validateOptions, validateLifecycleOptions } from '../validation.mjs';
+import { normalizeSignals, validateLogger, validateOptions, validateLifecycleOptions } from '../../src/lifecycle/validation.mjs';
 
 const log = { debug: jest.fn(), warn: jest.fn(), error: jest.fn() };
 
