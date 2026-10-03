@@ -77,5 +77,8 @@
       "arrowParens": "always",
       "proseWrap": "preserve",
       "endOfLine": "lf"
+    },
+    "eliware": {
+      "apply": ["general", "library", "npm-published"]
     }
 }
