@@ -42,6 +42,7 @@ Pass `exit: false` to stop the package from calling `processObj.exit`.
 | `removed`           | Read-only Boolean | Report whether this registration was removed.   |
 
 `shutdown()` uses `manual` as its default signal name and does not call `processObj.exit`.
+After removal, new `shutdown()` calls resolve without starting hooks.
 The first shutdown request sets the signal name for all hooks.
 Later or concurrent requests use the first request's promise.
 A shutdown hook can call and await `shutdown()`. That nested call resolves at once.

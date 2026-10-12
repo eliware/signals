@@ -34,6 +34,21 @@ test("does not exit after manual shutdown", async () => {
   expect(processObj.exit).not.toHaveBeenCalled();
 });
 
+test("does not start shutdown after deactivation", async () => {
+  const hook = jest.fn();
+  const lifecycle = createShutdown({
+    hooks: [hook],
+    log: { debug: jest.fn(), warn: jest.fn(), error: jest.fn() },
+    processObj: {},
+    exit: false,
+    exitCode: 0,
+  });
+  lifecycle.deactivate();
+  await lifecycle.shutdown();
+  expect(lifecycle.onBeforeExit(0)).toBeUndefined();
+  expect(hook).not.toHaveBeenCalled();
+});
+
 test("runs hooks once on beforeExit", async () => {
   const hook = jest.fn();
   const lifecycle = createShutdown({

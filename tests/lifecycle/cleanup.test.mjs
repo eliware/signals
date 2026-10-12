@@ -69,6 +69,20 @@ test("removes registrations only for the current API", () => {
   expect(second.removed).toBe(false);
 });
 
+test("does not run hooks through a removed API", async () => {
+  const processObj = makeProcess();
+  const hook = jest.fn();
+  const registration = registerSignals({
+    processObj,
+    log: makeLog(),
+    signals: [],
+    shutdownHook: hook,
+  });
+  registration.removeHandlers();
+  await registration.shutdown();
+  expect(hook).not.toHaveBeenCalled();
+});
+
 test("allows re-registration after cleanup without off", () => {
   const processObj = { on: jest.fn() };
   const first = registerSignals({ processObj, log: makeLog(), signals: [] });

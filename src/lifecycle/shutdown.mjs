@@ -2,6 +2,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 
 export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
   let shuttingDown = false;
+  let active = true;
   let shutdownPromise;
   const hookContext = new AsyncLocalStorage();
 
@@ -15,6 +16,7 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
     }
   };
   const shutdown = (receivedSignal = "manual") => {
+    if (!active) return Promise.resolve();
     if (shutdownPromise) {
       if (hookContext.getStore()) return Promise.resolve();
       log.warn(`Received ${receivedSignal} again, but already shutting down.`);
@@ -38,6 +40,7 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
     return shutdownPromise;
   };
   const onBeforeExit = (code) => {
+    if (!active) return undefined;
     if (shuttingDown) return shutdownPromise;
     shuttingDown = true;
     log.debug(`Process exiting (code ${code}). Running shutdown hooks...`);
@@ -54,5 +57,12 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
     return shutdownPromise;
   };
 
-  return { shutdown, onBeforeExit, getShuttingDown: () => shuttingDown };
+  return {
+    shutdown,
+    onBeforeExit,
+    deactivate: () => {
+      active = false;
+    },
+    getShuttingDown: () => shuttingDown,
+  };
 };

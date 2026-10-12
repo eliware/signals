@@ -38,6 +38,7 @@ Do not use the Node.js `exit` event for asynchronous cleanup.
 ## Remove handlers
 
 Call `removeHandlers()` to remove a registration.
+New `shutdown()` calls then resolve without starting hooks.
 Abort the configured `AbortSignal` to remove its handlers.
 An already-aborted signal removes the registration during setup.
 The package detaches listeners when `processObj.off` exists.
