@@ -14,17 +14,20 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
     exitCalled = true;
     processObj.exit(exitCode);
   };
+  const logSafely = (method, ...args) => {
+    try {
+      log[method](...args);
+    } catch {
+      // Keep cleanup active when the logger fails.
+    }
+  };
 
   const runHooks = async (receivedSignal) => {
     for (const hook of hooks) {
       try {
         await hookContext.run(true, () => hook(receivedSignal));
       } catch (err) {
-        try {
-          log.error("Error during shutdown hook:", err);
-        } catch {
-          // Continue with the next hook when the logger fails.
-        }
+        logSafely("error", "Error during shutdown hook:", err);
       }
     }
   };
@@ -33,12 +36,12 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
     if (receivedSignal !== "manual") exitRequested = true;
     if (shutdownPromise) {
       if (hookContext.getStore()) return Promise.resolve();
-      log.warn(`Received ${receivedSignal} again, but already shutting down.`);
+      logSafely("warn", `Received ${receivedSignal} again, but already shutting down.`);
       if (hooksFinished) exitProcess();
       return shutdownPromise;
     }
     shuttingDown = true;
-    log.debug(`Received ${receivedSignal}. Shutting down gracefully...`);
+    logSafely("debug", `Received ${receivedSignal}. Shutting down gracefully...`);
     let resolveShutdown;
     let rejectShutdown;
     shutdownPromise = new Promise((resolve, reject) => {
@@ -57,7 +60,7 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
     if (!active) return undefined;
     if (shuttingDown) return shutdownPromise;
     shuttingDown = true;
-    log.debug(`Process exiting (code ${code}). Running shutdown hooks...`);
+    logSafely("debug", `Process exiting (code ${code}). Running shutdown hooks...`);
     let resolveShutdown;
     let rejectShutdown;
     shutdownPromise = new Promise((resolve, reject) => {
