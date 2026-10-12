@@ -65,6 +65,21 @@ test("runs hooks once on beforeExit", async () => {
   expect(hook).toHaveBeenCalledTimes(1);
 });
 
+test("keeps the first shutdown promise when beforeExit overlaps", async () => {
+  const processObj = { on: jest.fn(), off: jest.fn(), exit: jest.fn() };
+  const log = { debug: jest.fn(), warn: jest.fn(), error: jest.fn() };
+  let finishHook;
+  const hook = jest.fn(() => new Promise((resolve) => (finishHook = resolve)));
+  const registration = registerSignals({ processObj, log, signals: [], shutdownHook: hook });
+  const shutdown = registration.shutdown();
+  const beforeExit = processObj.on.mock.calls.find(([event]) => event === "beforeExit")[1];
+  const beforeExitShutdown = beforeExit(0);
+  expect(beforeExitShutdown).toBe(shutdown);
+  expect(hook).toHaveBeenCalledTimes(1);
+  finishHook();
+  await Promise.all([shutdown, beforeExitShutdown]);
+});
+
 test("keeps the event loop active until beforeExit hooks finish", async () => {
   let finishHook;
   const hook = () => new Promise((resolve) => (finishHook = resolve));
