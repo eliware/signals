@@ -49,7 +49,7 @@ Remove a registration before you add a new one to the same process object.
 ## Repeated calls
 
 Each process object can have one active registration.
-Call `registerSignals()` again to add hooks to that registration.
+Call `registerSignals()` again to add hooks before shutdown starts.
 Keep lifecycle option values the same when you set them again.
 Remove the active registration before you set different lifecycle values.
 

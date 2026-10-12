@@ -39,7 +39,12 @@ export const registerSignals = (options = {}) => {
       (Object.hasOwn(options, "exit") && registration.exit !== exit) ||
       (Object.hasOwn(options, "signal") && registration.signal !== signal);
     if (conflicts) throw new TypeError("Repeated registration must use the same lifecycle options");
-    if (shutdownHook) registration.hooks.push(shutdownHook);
+    if (shutdownHook) {
+      if (registration.api.getShuttingDown()) {
+        throw new TypeError("Cannot add a shutdown hook after shutdown starts");
+      }
+      registration.hooks.push(shutdownHook);
+    }
     return registration.api;
   }
 
