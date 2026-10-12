@@ -50,7 +50,12 @@ export const registerSignals = (options = {}) => {
 
   const hooks = shutdownHook ? [shutdownHook] : [];
   const lifecycle = createShutdown({ hooks, log, processObj, exit, exitCode });
-  const handlers = installHandlers({ processObj, signals: selected, ...lifecycle });
+  const handlers = installHandlers({
+    processObj,
+    signals: selected,
+    shutdown: lifecycle.shutdownForSignal,
+    onBeforeExit: lifecycle.onBeforeExit,
+  });
   const cleanup = createCleanup({
     processObj,
     signal,

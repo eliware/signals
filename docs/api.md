@@ -41,11 +41,11 @@ Pass `exit: false` to stop the package from calling `processObj.exit`.
 | `removeHandlers()`  | Function          | Remove or disable this registration's handlers. |
 | `removed`           | Read-only Boolean | Report whether this registration was removed.   |
 
-`shutdown()` uses `manual` as its default signal name and does not call `processObj.exit`.
+`shutdown()` uses `manual` as its default label. A manual label does not call `processObj.exit`.
 After removal, new `shutdown()` calls resolve without starting hooks.
 The first shutdown request sets the signal name for all hooks.
 Later or concurrent requests use the first request's promise.
-A signal request still triggers process exit after hooks finish.
+Only a configured signal event triggers process exit after hooks finish.
 A shutdown hook can call and await `shutdown()`. That nested call resolves at once.
 The package logs a warning for duplicate requests.
 Each hook error is logged. Hook or logger errors do not stop later hooks.

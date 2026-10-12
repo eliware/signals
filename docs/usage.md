@@ -35,7 +35,7 @@ The package calls `process.exit(0)` after signal cleanup when that method exists
 
 Set `exit` to `false` when your application controls process exit.
 Call `shutdown()` to run cleanup and wait for every hook.
-Pass a signal name to `shutdown()` when you need to label a manual request.
+Pass a label to `shutdown()` to name a manual request. A label does not trigger process exit.
 Call `removeHandlers()` after cleanup when you no longer need the registration.
 
 ```js

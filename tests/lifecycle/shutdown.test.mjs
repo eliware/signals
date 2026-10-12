@@ -168,7 +168,7 @@ test("allows a hook to await shutdown during beforeExit", async () => {
   expect(hook).toHaveBeenCalledTimes(1);
   expect(registration.getShuttingDown()).toBe(true);
 });
-test("prevents concurrent public shutdown and uses its first exit code", async () => {
+test("prevents concurrent public shutdown and uses its first label", async () => {
   const { processObj, log } = makeContext();
   const first = jest.fn(async () => {
     throw new Error("first");
@@ -186,7 +186,7 @@ test("prevents concurrent public shutdown and uses its first exit code", async (
   const two = registration.shutdown("SIGINT");
   await Promise.all([one, two]);
   expect(second).toHaveBeenCalledWith("SIGTERM");
-  expect(processObj.exit).toHaveBeenCalledWith(7);
+  expect(processObj.exit).not.toHaveBeenCalled();
   expect(log.warn).toHaveBeenCalledWith("Received SIGINT again, but already shutting down.");
 });
 test("does not rerun public hooks after beforeExit", async () => {

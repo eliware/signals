@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import {
   getRegistration,
   setRegistration,
@@ -23,4 +23,12 @@ test("rejects a shutdown hook after shutdown starts", async () => {
   expect(() => registerSignals({ processObj, log, signals: [], shutdownHook() {} })).toThrow(
     "Cannot add a shutdown hook after shutdown starts",
   );
+});
+
+test("does not exit for a manual shutdown label", async () => {
+  const processObj = { on() {}, off() {}, exit: jest.fn() };
+  const log = { debug() {}, warn() {}, error() {} };
+  const registration = registerSignals({ processObj, log, signals: [] });
+  await registration.shutdown("maintenance");
+  expect(processObj.exit).not.toHaveBeenCalled();
 });

@@ -33,7 +33,6 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
   };
   const shutdown = (receivedSignal = "manual") => {
     if (!active) return Promise.resolve();
-    if (receivedSignal !== "manual") exitRequested = true;
     if (shutdownPromise) {
       if (hookContext.getStore()) return Promise.resolve();
       logSafely("warn", `Received ${receivedSignal} again, but already shutting down.`);
@@ -55,6 +54,10 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
       })
       .then(resolveShutdown, rejectShutdown);
     return shutdownPromise;
+  };
+  const shutdownForSignal = (receivedSignal) => {
+    exitRequested = true;
+    return shutdown(receivedSignal);
   };
   const onBeforeExit = (code) => {
     if (!active) return undefined;
@@ -80,6 +83,7 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
 
   return {
     shutdown,
+    shutdownForSignal,
     onBeforeExit,
     deactivate: () => {
       active = false;

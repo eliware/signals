@@ -76,7 +76,7 @@ describe("registerSignals", () => {
     ).toThrow(TypeError);
   });
 
-  test("runs hooks, exits, and reports repeated shutdown", async () => {
+  test("runs hooks and reports repeated labeled shutdown", async () => {
     const hook = jest.fn(async (signal) => signal);
     const { shutdown, getShuttingDown } = registerSignalsNamed({
       processObj: mockProcess,
@@ -91,7 +91,7 @@ describe("registerSignals", () => {
     expect(hook).toHaveBeenCalledWith("SIGTERM");
     expect(mocklog.debug).toHaveBeenCalledWith("Received SIGTERM. Shutting down gracefully...");
     expect(mocklog.warn).toHaveBeenCalledWith("Received SIGTERM again, but already shutting down.");
-    expect(mockProcess.exit).toHaveBeenCalledWith(0);
+    expect(mockProcess.exit).not.toHaveBeenCalled();
   });
 
   test("signal handler invokes shutdown", async () => {
@@ -125,13 +125,13 @@ describe("registerSignals", () => {
     const hook = jest.fn(async () => {
       throw error;
     });
-    const { shutdown } = registerSignalsNamed({
+    registerSignalsNamed({
       processObj: mockProcess,
       log: mocklog,
-      signals: [],
+      signals: ["SIGTERM"],
       shutdownHook: hook,
     });
-    await shutdown("SIGTERM");
+    await handler(mockProcess, "SIGTERM")();
     expect(mocklog.error).toHaveBeenCalledWith("Error during shutdown hook:", error);
     expect(mockProcess.exit).toHaveBeenCalledWith(0);
   });

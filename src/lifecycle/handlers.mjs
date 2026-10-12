@@ -4,7 +4,7 @@ export const installHandlers = ({ processObj, signals, shutdown, onBeforeExit })
   for (const name of signals) {
     const listener = () => {
       if (!active) return;
-      void shutdown(name);
+      return shutdown(name);
     };
     listeners.set(name, listener);
     processObj.on(name, listener);
