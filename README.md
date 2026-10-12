@@ -23,13 +23,9 @@ Graceful shutdown signal handler utility for Node.js
 
 ## Features
 
-Register handlers for `SIGTERM`, `SIGINT`, and `SIGHUP`.
-Add ordered async hooks for signal, manual, and `beforeExit` shutdown.
-Use an injected process object and logger in tests or embedded applications.
-Use an `AbortSignal` to remove listeners.
-Prevent repeated and concurrent shutdown work.
-Continue later hooks when a hook fails.
-Choose an exit code or disable process exit.
+Handle `SIGTERM`, `SIGINT`, and `SIGHUP`.
+Run ordered cleanup hooks during shutdown.
+Control the exit code or disable process exit.
 
 ## Requirements
 
@@ -38,101 +34,85 @@ Use native ESM.
 
 ## Setup
 
-Install the package:
+Run this command in your project:
 
 ```sh
 npm install @eliware/signals
 ```
 
-Import the default or named `registerSignals` export from `@eliware/signals`.
+This command installs the current `latest` release from npm.
 
 ## Usage
 
+Import `registerSignals` from `@eliware/signals`.
+Pass a cleanup function as `shutdownHook`.
+Set `exit: false` when your application controls process exit.
+Call `shutdown()` to run cleanup and wait for completion.
+Call `removeHandlers()` when you no longer need the registration.
+
 ```js
-import log from "@eliware/log";
 import registerSignals from "@eliware/signals";
 
-const registration = registerSignals({
-  log,
-  exit: false,
-  shutdownHook: async (signal) => {
-    log.debug(`Cleanup complete after ${signal}`);
+registerSignals({
+  shutdownHook: async () => {
+    process.stdout.write("Cleanup complete\n");
   },
 });
-
-await registration.shutdown("manual");
-registration.removeHandlers();
 ```
 
-Call `registerSignals` again to add hooks to the same process lifecycle.
-Use the same lifecycle options for each registration.
-Call `shutdown()` when the caller must wait for cleanup.
-Call `removeHandlers()` when the registration is no longer needed.
-Shutdown hooks do not run from Node.js `exit` events.
-See [release notes](RELEASE_NOTES.md) for user-visible changes.
+This example requires Node.js 26 or later and native ESM.
+Run it in a project that has this package installed.
+Send `SIGTERM`, `SIGINT`, or `SIGHUP` to run the hook.
+The process exits with code `0` after the hook.
+
+Read the [release notes](RELEASE_NOTES.md) for user-visible changes.
+Read the [user guides](docs/README.md) for full usage details.
 
 ## Development
 
-Install locked development dependencies with `npm ci`.
+Run `npm ci` to install the locked development dependencies.
 Run `npm test` before you commit changes.
-Run `npm run lint`, `npm run format:check`, `npm run audit`, or `npm run typecheck` for focused checks.
-Run `npm run format` to format maintained files.
 
 ## Testing
 
-`npm test` runs the shared validation checks, typecheck, Jest tests, and coverage.
-The Jest configuration requires 100 percent statements, branches, functions, and lines.
-Test files mirror source modules under `tests/`.
+Run `npm test` to validate the package.
 
 ## Troubleshooting
 
-Use `exit: false` when the caller owns process exit.
-Use `shutdown()` when the caller must await hook completion.
-Use `removeHandlers()` or abort the configured signal to remove listeners.
-Read [troubleshooting guidance](docs/troubleshooting.md) for more detail.
+Set `exit: false` when your application controls process exit.
+Call and await `shutdown()` when your application must wait for cleanup.
+Read the [troubleshooting guide](docs/troubleshooting.md) for more help.
 
 ## Security
 
 Keep secrets and sensitive shutdown data out of logs.
-Keep cleanup hooks bounded.
-Do not depend on async work after Node.js enters the `exit` event.
-Validation and publication are separate actions.
-Follow Eliware Operations approval steps before publication.
+Do not rely on asynchronous cleanup during Node.js `exit` events.
 
 ## API
 
-`registerSignals(options?)` returns a registration object.
-
+Call `registerSignals(options?)` to get a registration object.
 Options include `processObj`, `log`, `signals`, `shutdownHook`, `exitCode`, `exit`, and `signal`.
-The logger must provide `debug`, `warn`, and `error` methods.
-The process object must provide `on`; it can also provide `off` and `exit`.
-Without `off`, cleanup cannot detach listeners, but removed listeners cannot run shutdown hooks.
-Repeated registrations for one process object must use the same lifecycle options.
-
-The registration object provides `shutdown(signal?)`, `getShuttingDown()`, `removeHandlers()`, and `removed`.
-Signal names are deduplicated while preserving order.
 Each hook runs in registration order.
-A hook error is logged and does not stop later hooks.
-See [type declarations](src/index.d.ts) for complete option and return types.
+The package logs hook errors and continues to later hooks.
+Read the [API reference](docs/api.md) and [type declarations](src/index.d.ts) for details.
 
 ## Packaging
 
-The package uses native ESM and supports Node.js 26 or later.
-Its public entrypoint is `src/index.mjs`.
-Its TypeScript declarations are `src/index.d.ts`.
-The package includes source, documentation, examples, and specifications.
-The npm package uses public access and provenance.
-No repository command grants approval to publish.
-Use Eliware Operations approval steps before publication.
+The package uses native ESM and requires Node.js 26 or later.
+The runtime entrypoint is `src/index.mjs`.
+The type declarations are `src/index.d.ts`.
+The package includes source, docs, examples, and specifications.
+Install the public package from [npm](https://www.npmjs.com/package/@eliware/signals).
+Repository validation does not authorize publication.
 
-See [documentation](docs/README.md), [specifications](specs/README.md), and [release notes](RELEASE_NOTES.md).
+Read the [documentation index](docs/README.md) and [specification index](specs/README.md).
 
 ## Examples
 
-See the [example index](examples/README.md).
+Read the [example index](examples/README.md).
 The [example](examples/example.mjs) requires Node.js 26 or later and installed package dependencies.
 Run it with `node examples/example.mjs`.
-It registers signal handlers, calls shutdown, and removes listeners without exiting the process.
+It runs cleanup and removes handlers without exiting the process.
 
 ## Support
 

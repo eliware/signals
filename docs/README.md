@@ -1,12 +1,12 @@
-# Documentation
+# User documentation
 
-This directory contains end-user documentation for `@eliware/signals`.
+Use these guides to install, configure, and operate `@eliware/signals`.
 
-## Contents
+## Guides
 
-- [Usage](usage.md)
-- [Troubleshooting](troubleshooting.md)
+- [Usage](usage.md): install the package and add shutdown hooks.
+- [API reference](api.md): review options, return values, and defaults.
+- [Shutdown behavior](lifecycle.md): learn when hooks run and how cleanup works.
+- [Troubleshooting](troubleshooting.md): resolve common setup and runtime problems.
 
-Audience: library users. Prerequisites: a supported runtime and configured
-project. Expected result: documented signal and lifecycle operations complete
-without undocumented environment assumptions.
+Requirements: Node.js 26 or later and native ESM.
