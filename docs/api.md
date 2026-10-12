@@ -44,6 +44,7 @@ Pass `exit: false` to stop the package from calling `processObj.exit`.
 `shutdown()` uses `manual` as its default signal name and does not call `processObj.exit`.
 The first shutdown request sets the signal name for all hooks.
 Later or concurrent requests use the first request's promise.
+A shutdown hook can call and await `shutdown()`. That nested call resolves at once.
 The package logs a warning for duplicate requests.
 Each hook error is logged. A hook error does not stop later hooks.
 The package rejects invalid options with a `TypeError`.

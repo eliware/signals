@@ -50,6 +50,18 @@ test("runs hooks once on beforeExit", async () => {
   expect(hook).toHaveBeenCalledTimes(1);
 });
 
+test("allows a hook to await shutdown during beforeExit", async () => {
+  const processObj = { on: jest.fn(), off: jest.fn(), exit: jest.fn() };
+  const log = { debug: jest.fn(), warn: jest.fn(), error: jest.fn() };
+  let registration;
+  const hook = jest.fn(async () => registration.shutdown());
+  registration = registerSignals({ processObj, log, signals: [], shutdownHook: hook });
+  const beforeExit = processObj.on.mock.calls.find(([event]) => event === "beforeExit")[1];
+  await beforeExit(0);
+  expect(hook).toHaveBeenCalledTimes(1);
+  expect(registration.getShuttingDown()).toBe(true);
+});
+
 test("prevents concurrent public shutdown and uses its first exit code", async () => {
   const processObj = { on: jest.fn(), off: jest.fn(), exit: jest.fn() };
   const log = { debug: jest.fn(), warn: jest.fn(), error: jest.fn() };
