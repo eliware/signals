@@ -1,7 +1,11 @@
-import { expect, test } from '@jest/globals';
-import { getRegistration, setRegistration, deleteRegistration } from '../../src/lifecycle/registration.mjs';
+import { expect, test } from "@jest/globals";
+import {
+  getRegistration,
+  setRegistration,
+  deleteRegistration,
+} from "../../src/lifecycle/registration.mjs";
 
-test('stores registrations by process-like object', () => {
+test("stores registrations by process-like object", () => {
   const processObj = {};
   const registration = {};
   setRegistration(processObj, registration);

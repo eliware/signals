@@ -1,10 +1,24 @@
 export const installHandlers = ({ processObj, signals, shutdown, onBeforeExit }) => {
-    const listeners = new Map();
-    for (const name of signals) {
-        const listener = () => { void shutdown(name); };
-        listeners.set(name, listener);
-        processObj.on(name, listener);
-    }
-    processObj.on('beforeExit', onBeforeExit);
-    return { listeners, onBeforeExit };
+  let active = true;
+  const listeners = new Map();
+  for (const name of signals) {
+    const listener = () => {
+      if (!active) return;
+      void shutdown(name);
+    };
+    listeners.set(name, listener);
+    processObj.on(name, listener);
+  }
+  const beforeExitListener = (code) => {
+    if (!active) return;
+    return onBeforeExit(code);
+  };
+  processObj.on("beforeExit", beforeExitListener);
+  return {
+    listeners,
+    onBeforeExit: beforeExitListener,
+    deactivate: () => {
+      active = false;
+    },
+  };
 };

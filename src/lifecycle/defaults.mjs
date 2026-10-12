@@ -1,1 +1,1 @@
-export const defaultSignals = ['SIGTERM', 'SIGINT', 'SIGHUP'];
+export const defaultSignals = ["SIGTERM", "SIGINT", "SIGHUP"];

@@ -1,64 +1,83 @@
 # Release Notes
 
-## 2.1.0 — September 2, 2026
+## Unreleased
 
-- Decomposed the signal lifecycle implementation into focused root modules for
-  defaults, validation, registration, shutdown, handlers, and cleanup.
-- Added matching focused tests while retaining cross-cutting public API tests.
-- Hardened lifecycle validation, asynchronous `beforeExit` handling, default
-  signal isolation, and package contents.
-- Updated `@eliware/log` to 2.1.0 and `@eliware/test` to 2.3.1.
+### Fixed
+
+- Prevent stale signal listeners from running shutdown hooks after cleanup.
+
+## 12.0.0 — 2026-10-12
+
+### Changed
+
+- Align package metadata, validation commands, documentation, and workflows with v12 conventions.
+- Upgrade `@eliware/log` and `@eliware/test` to version 12.
+- This package version is an unpublished candidate pending publication.
+
+## 2.1.0 — 2026-09-02
+
+### Changed
+
+- Split signal lifecycle behavior into focused modules and matching tests.
+- Strengthen lifecycle validation, `beforeExit` handling, signal isolation, and package contents.
 
 ## 2.0.0 — 2026-08-25
 
-- Modernized testing and linting on the shared `@eliware/test` harness.
-- Updated the runtime logger dependency to `@eliware/log` 2.0.0.
-- Added Node.js `>=26` engine metadata, public publish configuration, and
-  package inclusion of release notes.
-- Added Ubuntu and Windows CI validation for main pushes, pull requests, and
-  `v*` tags, with production dependency auditing and a tag-gated publish job.
-- Breaking: development commands now use the shared harness; consumers must
-  continue using the documented ESM API and Node.js 26 or newer.
+### Changed
 
-## 1.1.7 — August 10, 2026
+- Move tests and lint checks to the shared `@eliware/test` harness.
+- Require Node.js 26 or later and add Ubuntu and Windows CI checks.
+- Add a tag-based npm publication workflow.
 
-- Updated `@eliware/log` to 1.1.12.
-- Validated injected logger methods and aligned TypeScript logger/process-like types.
-- Completed 100% statements, branches, functions, and lines coverage.
-- Fixed the runnable example import path and made it non-exiting.
+### Breaking changes
+
+- Require the documented ESM API and Node.js 26 or later.
+
+## 1.1.7 — 2026-08-10
+
+### Fixed
+
+- Fix the runnable example import path and disable process exit in the example.
+- Validate injected logger methods and align TypeScript process and logger types.
 
 ## 1.1.6 — 2026-08-07
 
-- Standardized package layout, validation scripts, TypeScript checking, CI, and package contents.
-- Updated `@eliware/log` to 1.1.12.
-- Expanded operational, troubleshooting, development, and security documentation.
+### Changed
 
-## 1.1.5 — August 7, 2026
+- Standardize package layout, validation, TypeScript checks, CI, and package contents.
+- Expand operational, troubleshooting, development, and security guidance.
 
-- Updated `@eliware/log` to `^1.1.10`.
+## 1.1.5 — 2026-08-07
+
+### Changed
+
+- Upgrade `@eliware/log` to version 1.1.10.
 
 ## 1.1.4 — 2026-08-06
 
-- Added `AGENTS.md` with development conventions, lifecycle guidance, validation commands, API compatibility requirements, and release workflow rules.
+### Added
+
+- Add repository guidance for development, lifecycle behavior, validation, API compatibility, and releases.
 
 ## 1.1.3 — 2026-08-06
 
-- Modernized graceful-shutdown lifecycle handling.
-- Added idempotent registration per process-like object.
-- Added repeat-safe `removeHandlers()` cleanup.
-- Added `AbortSignal`-based cleanup.
-- Added signal validation and duplicate signal removal.
-- Added concurrent shutdown protection so hooks run once.
-- Isolated shutdown-hook failures so later hooks still execute.
-- Added configurable `exitCode` and non-exiting mode for embedded applications and tests.
-- Updated TypeScript declarations, README documentation, and example usage.
-- Expanded tests to 100% coverage and standardized lint/coverage tooling.
-- Standardized Node.js 26 CI and repository housekeeping.
+### Added
+
+- Add repeat-safe registration, listener cleanup, abort cleanup, signal validation, and shutdown hooks.
+- Add concurrent shutdown protection, hook error isolation, exit codes, and a non-exiting mode.
+
+### Changed
+
+- Update declarations, documentation, examples, coverage checks, and Node.js CI.
 
 ## 1.1.2 — 2026-07-01
 
-- Refreshed package metadata, dependencies, and lockfile.
+### Changed
+
+- Refresh package metadata, dependencies, and lockfile.
 
 ## 1.1.1 — 2025-12-09
 
-- Refreshed package metadata, dependencies, and lockfile.
+### Changed
+
+- Refresh package metadata and dependencies.

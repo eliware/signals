@@ -1,218 +1,138 @@
 # [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)
 
-Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [examples](examples/README.md)
+## @eliware/signals [![npm](https://img.shields.io/npm/v/@eliware/signals)](https://www.npmjs.com/package/@eliware/signals) [![License](https://img.shields.io/github/license/eliware/signals)](https://github.com/eliware/signals/blob/main/LICENSE) [![CI](https://github.com/eliware/signals/actions/workflows/ci.yaml/badge.svg)](https://github.com/eliware/signals/actions/workflows/ci.yaml)
 
-## @eliware/signals [![npm version](https://img.shields.io/npm/v/@eliware/signals.svg)](https://www.npmjs.com/package/@eliware/signals)[![license](https://img.shields.io/github/license/eliware/signals.svg)](LICENSE)[![build status](https://github.com/eliware/signals/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/signals/actions)
-
-> Graceful shutdown signal handler utility for Node.js
-
----
+Graceful shutdown signal handler utility for Node.js
 
 ## Table of Contents
 
 - [Features](#features)
 - [Requirements](#requirements)
-- [Installation](#installation)
+- [Setup](#setup)
 - [Usage](#usage)
-  - [ESM Example](#esm-example)
-  - [Shutdown Hooks Example](#shutdown-hooks-example)
-  - [Operations](#operations)
-- [API](#api)
-- [TypeScript](#typescript)
-- [Errors / Troubleshooting](#errors--troubleshooting)
 - [Development](#development)
+- [Testing](#testing)
+- [Troubleshooting](#troubleshooting)
 - [Security](#security)
+- [API](#api)
+- [Packaging](#packaging)
+- [Examples](#examples)
+- [Support](#support)
+- [Links](#links)
 - [License](#license)
 
 ## Features
 
-- Register handlers for process signals (e.g., `SIGTERM`, `SIGINT`, `SIGHUP`)
-- Register async shutdown hooks to run on signals, explicit shutdown, or `beforeExit`
-- Customizable logger and process object
-- Idempotent registration with repeat-safe listener cleanup
-- AbortSignal support for lifecycle-managed applications
-- Concurrent shutdown protection and per-hook error isolation
-- Configurable exit code and optional non-exiting mode
-- Simple ESM API
-- TypeScript type definitions included
-- Well-tested with the shared `@eliware/test` harness
+Register handlers for `SIGTERM`, `SIGINT`, and `SIGHUP`.
+Add ordered async hooks for signal, manual, and `beforeExit` shutdown.
+Use an injected process object and logger in tests or embedded applications.
+Use an `AbortSignal` to remove listeners.
+Prevent repeated and concurrent shutdown work.
+Continue later hooks when a hook fails.
+Choose an exit code or disable process exit.
 
 ## Requirements
 
-- Node.js 26 or newer (`engines.node: >=26`)
-- A process-like application lifecycle that can receive shutdown signals
+Use Node.js 26 or later.
+Use native ESM.
 
-## Installation
+## Setup
 
-```bash
+Install the package:
+
+```sh
 npm install @eliware/signals
 ```
 
+Import the default or named `registerSignals` export from `@eliware/signals`.
+
 ## Usage
 
-### ESM Example
-
 ```js
-import log from '@eliware/log';
-import registerSignals from '@eliware/signals';
+import log from "@eliware/log";
+import registerSignals from "@eliware/signals";
 
-const { shutdown, getShuttingDown, removeHandlers } = registerSignals({
+const registration = registerSignals({
   log,
   exit: false,
-});
-
-console.log(`Shutdown handlers ready: ${getShuttingDown()}`);
-await shutdown('manual');
-removeHandlers();
-```
-
-
-### Shutdown Hooks Example
-
-```js
-import log from '@eliware/log';
-import registerSignals from '@eliware/signals';
-```
-
-You can call `registerSignals` multiple times to add async shutdown hooks. All
-hooks run in registration order when a signal is received, `shutdown()` is
-called, or Node emits `beforeExit`. Repeated registrations must use the same
-lifecycle options (`log`, `signals`, `exitCode`, `exit`, and `signal`);
-conflicting options throw `TypeError`.
-
-```js
-// Simulate a resource that needs cleanup (e.g., database connection)
-const fakeDb = {
-  close: async () => {
-    return new Promise(resolve => setTimeout(() => {
-      log.info('Fake DB connection closed');
-      resolve();
-    }, 100));
-  }
-};
-
-// Register signal handlers
-registerSignals({ log });
-
-// Add shutdown hook for closing the fake DB connection
-registerSignals({
-  log,
   shutdownHook: async (signal) => {
-    await fakeDb.close();
-    log.info(`Cleanup complete on ${signal}`);
-  }
+    log.debug(`Cleanup complete after ${signal}`);
+  },
 });
+
+await registration.shutdown("manual");
+registration.removeHandlers();
 ```
 
-
-## API
-
-### registerSignals(options?)
-
-Registers shutdown handlers for the specified signals and allows registering async shutdown hooks.
-
-#### Options
-
-- `processObj` (default: `process`): Process-like object to attach handlers to; must provide `on`, with optional `off` and `exit`.
-- `log` (default: `@eliware/log`): Logger for output. Must have `debug`, `warn`, and `error` methods; invalid loggers throw `TypeError`. Custom loggers are responsible for their own error serialization/redaction.
-- `signals` (default: `[ 'SIGTERM', 'SIGINT', 'SIGHUP' ]`): Array of signals to listen for.
-- `shutdownHook` (optional): A sync or async function to run during shutdown. Multiple registrations add hooks in order.
-- `exitCode` (default: `0`): Finite integer exit code used after signal-driven shutdown.
-- `exit` (default: `true`): Boolean. Set to `false` for embedded applications and tests that should not call `process.exit`.
-- `signal` (optional): An `AbortSignal` that removes all registered listeners when aborted.
-
-#### Returns
-
-An object with:
-
-- `shutdown(signal: string): Promise<void>` — Manually trigger shutdown logic.
-- `getShuttingDown(): boolean` — Returns whether shutdown is in progress.
-- `removeHandlers(): void` — Detaches registered listeners; safe to call repeatedly.
-- `removed: boolean` — Indicates whether cleanup has completed.
-
-Invalid options throw `TypeError` before listeners are registered.
-
-> **Shutdown hooks run on signals, explicit `shutdown()`, or `beforeExit`. They are intentionally not run from Node’s `exit` event because asynchronous cleanup cannot complete reliably there.
-
-When an injected `processObj` does not provide `off`, `removeHandlers()` remains
-safe and marks the registration removed, but cannot detach listeners from that
-object. The `beforeExit` listener returns the hook promise for integrations
-that explicitly await it; Node itself does not await event-listener return
-values, so asynchronous cleanup must keep its work scheduled before exit.
-
-## Operations
-
-Signal handlers are installed for `SIGTERM`, `SIGINT`, and `SIGHUP` by default.
-Use `signals: []` to install only the `beforeExit` lifecycle hook, or provide a
-custom signal list. Signal names are deduplicated while preserving order.
-
-The first registration for a process-like object owns its lifecycle options.
-Later registrations add hooks to that same lifecycle and return the same API.
-Call `removeHandlers()` when the registration is no longer needed; it is safe
-to call repeatedly. An attached `AbortSignal` performs the same cleanup when it
-aborts.
-
-When `processObj.off` is unavailable, cleanup remains safe and marks the
-registration removed, but cannot detach listeners from that object. Prefer an
-object implementing `on`, `off`, and `exit` for complete lifecycle control.
-
-## TypeScript
-
-Type definitions are included:
-
-```ts
-import registerSignals, { RegisterSignalsOptions } from '@eliware/signals';
-
-// Optionally provide options
-const options: RegisterSignalsOptions = {
-  processObj: process, // optional, defaults to process
-  log: myLogger,       // optional; must provide debug, warn, and error
-  signals: ['SIGTERM', 'SIGINT', 'SIGHUP'], // optional, defaults as shown
-  shutdownHook: async (signal) => { /* ... */ } // optional
-};
-
-const { shutdown, getShuttingDown, removeHandlers, removed } = registerSignals(options);
-
-// Types:
-// interface RegisterSignalsOptions {
-//   processObj?: ProcessLike;
-//   log?: SignalsLogger;
-//   signals?: NodeSignal[];
-//   shutdownHook?: (signal: string) => void | Promise<void>;
-//   exitCode?: number;
-//   exit?: boolean;
-//   signal?: AbortSignal;
-// }
-//
-// function registerSignals(options?: RegisterSignalsOptions): SignalsRegistration;
-```
-
-## Errors / Troubleshooting
-
-Shutdown hooks run in registration order, and a failing hook is logged without
-preventing later hooks from running. Use `exit: false` for embedded applications
-and tests. Prefer explicit `shutdown()` when the caller must await cleanup.
-Always call `removeHandlers()` when a registration is no longer needed.
+Call `registerSignals` again to add hooks to the same process lifecycle.
+Use the same lifecycle options for each registration.
+Call `shutdown()` when the caller must wait for cleanup.
+Call `removeHandlers()` when the registration is no longer needed.
+Shutdown hooks do not run from Node.js `exit` events.
+See [release notes](RELEASE_NOTES.md) for user-visible changes.
 
 ## Development
 
-```bash
-npm test
-npm run lint
-npm run typecheck
-npm audit --omit=dev --audit-level=moderate
-npm run pack
-```
+Install locked development dependencies with `npm ci`.
+Run `npm test` before you commit changes.
+Run `npm run lint`, `npm run format:check`, `npm run audit`, or `npm run typecheck` for focused checks.
+Run `npm run format` to format maintained files.
 
-`npm test` and `npm run lint` use the shared `@eliware/test` harness. The
-baseline test command reports and fails on any statement, branch, function, or
-line coverage gap in the in-scope production logic.
+## Testing
 
-Examples are safe to inspect and should be run only in a controlled process when testing signal behavior.
+`npm test` runs the shared validation checks, typecheck, Jest tests, and coverage.
+The Jest configuration requires 100 percent statements, branches, functions, and lines.
+Test files mirror source modules under `tests/`.
+
+## Troubleshooting
+
+Use `exit: false` when the caller owns process exit.
+Use `shutdown()` when the caller must await hook completion.
+Use `removeHandlers()` or abort the configured signal to remove listeners.
+Read [troubleshooting guidance](docs/troubleshooting.md) for more detail.
 
 ## Security
 
-Set `LOG_LEVEL=debug` to see diagnostic messages from the default logger. Do not log secrets or sensitive shutdown context. Keep cleanup hooks bounded and avoid relying on asynchronous work after the process has entered the `exit` event.
+Keep secrets and sensitive shutdown data out of logs.
+Keep cleanup hooks bounded.
+Do not depend on async work after Node.js enters the `exit` event.
+Validation and publication are separate actions.
+Follow Eliware Operations approval steps before publication.
+
+## API
+
+`registerSignals(options?)` returns a registration object.
+
+Options include `processObj`, `log`, `signals`, `shutdownHook`, `exitCode`, `exit`, and `signal`.
+The logger must provide `debug`, `warn`, and `error` methods.
+The process object must provide `on`; it can also provide `off` and `exit`.
+Without `off`, cleanup cannot detach listeners, but removed listeners cannot run shutdown hooks.
+Repeated registrations for one process object must use the same lifecycle options.
+
+The registration object provides `shutdown(signal?)`, `getShuttingDown()`, `removeHandlers()`, and `removed`.
+Signal names are deduplicated while preserving order.
+Each hook runs in registration order.
+A hook error is logged and does not stop later hooks.
+See [type declarations](src/index.d.ts) for complete option and return types.
+
+## Packaging
+
+The package uses native ESM and supports Node.js 26 or later.
+Its public entrypoint is `src/index.mjs`.
+Its TypeScript declarations are `src/index.d.ts`.
+The package includes source, documentation, examples, and specifications.
+The npm package uses public access and provenance.
+No repository command grants approval to publish.
+Use Eliware Operations approval steps before publication.
+
+See [documentation](docs/README.md), [specifications](specs/README.md), and [release notes](RELEASE_NOTES.md).
+
+## Examples
+
+See the [example index](examples/README.md).
+The [example](examples/example.mjs) requires Node.js 26 or later and installed package dependencies.
+Run it with `node examples/example.mjs`.
+It registers signal handlers, calls shutdown, and removes listeners without exiting the process.
 
 ## Support
 
@@ -222,13 +142,15 @@ For help, questions, or to chat with the author and community, visit:
 
 **[eliware.org on Discord](https://discord.gg/M6aTR9eTwN)**
 
-## License
-
-[MIT © 2025 Eli Sterling, eliware.org](LICENSE)
-
 ## Links
 
 - [Home Page](https://eliware.org)
-- [GitHub](https://github.com/eliware/signals)
+- [GitHub Org](https://github.com/eliware)
+- [GitHub Repo](https://github.com/eliware/signals)
+- [Bug Reports](https://github.com/eliware/signals/issues)
 - [npm](https://www.npmjs.com/package/@eliware/signals)
 - [Discord](https://discord.gg/M6aTR9eTwN)
+
+## License
+
+[MIT © Eliware](LICENSE)

@@ -1,0 +1,11 @@
+version: "12.0"
+description: Local requirements for the Eliware signals library.
+directives:
+  - id: E-105.0
+    dos:
+      - Provide a native ESM API for process signal handling and graceful shutdown.
+      - Keep shutdown hooks ordered, repeat-safe, and isolated from individual hook errors.
+      - Keep public API behavior consistent with documentation and type declarations.
+    donts:
+      - Do not run async shutdown hooks from Node.js exit events.
+      - Do not treat validation as approval to publish or deploy.

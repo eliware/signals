@@ -1,4 +1,4 @@
-export type NodeSignal = 'SIGTERM' | 'SIGINT' | 'SIGHUP' | (string & {});
+export type NodeSignal = "SIGTERM" | "SIGINT" | "SIGHUP" | (string & {});
 export interface ProcessLike {
   on(event: string, listener: (...args: any[]) => void): unknown;
   off?(event: string, listener: (...args: any[]) => void): unknown;

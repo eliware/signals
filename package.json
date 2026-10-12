@@ -1,85 +1,118 @@
 {
-    "name": "@eliware/signals",
-    "type": "module",
-    "version": "2.1.0",
-    "engines": {
-        "node": ">=26"
-    },
-    "description": "Graceful shutdown signal handler utility for Node.js",
-    "types": "index.d.ts",
-    "files": [
-        "src",
-        "index.d.ts",
-        "README.md",
-        "RELEASE_NOTES.md",
-        "LICENSE",
-        "examples"
+  "name": "@eliware/signals",
+  "version": "12.0.0",
+  "type": "module",
+  "description": "Graceful shutdown signal handler utility for Node.js",
+  "keywords": [
+    "nodejs",
+    "signals",
+    "shutdown",
+    "graceful shutdown",
+    "process",
+    "handler",
+    "utility",
+    "esm",
+    "package",
+    "library",
+    "npm",
+    "node",
+    "logger",
+    "abort-signal"
+  ],
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "main": "./src/index.mjs",
+  "files": [
+    "src/",
+    "docs/",
+    "README.md",
+    "AGENTS.md",
+    "LICENSE",
+    "RELEASE_NOTES.md",
+    "examples/",
+    "specs/"
+  ],
+  "scripts": {
+    "test": "eliware-test",
+    "lint": "eliware-test --lint",
+    "audit": "eliware-test --audit",
+    "format": "eliware-test --format",
+    "format:check": "eliware-test --format-check",
+    "typecheck": "tsc --project tsconfig.json",
+    "pack": "eliware-test --pack"
+  },
+  "engines": {
+    "node": ">=26"
+  },
+  "dependencies": {
+    "@eliware/log": "^12.0.0"
+  },
+  "devDependencies": {
+    "@eliware/test": "^12.0.0",
+    "typescript": "^7.0.2"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.mjs"
     ],
-    "exports": {
-        ".": {
-            "types": "./index.d.ts",
-            "import": "./src/index.mjs"
-        }
-    },
-    "scripts": {
-        "test": "eliware-test",
-        "lint": "eliware-test --lint",
-        "typecheck": "tsc --project tsconfig.json",
-        "pack": "npm pack --dry-run"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/eliware/signals.git"
-    },
-    "keywords": [
-        "nodejs",
-        "signals",
-        "shutdown",
-        "graceful shutdown",
-        "process",
-        "handler",
-        "utility",
-        "esm",
-        "package",
-        "library",
-        "npm",
-        "node",
-        "logger",
-        "abort-signal"
+    "collectCoverageFrom": [
+      "src/**/*.mjs"
     ],
-    "author": "Eli Sterling, eliware.org <eli@eliware.org>",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/eliware/signals/issues"
-    },
-    "homepage": "https://github.com/eliware/signals#readme",
-    "publishConfig": {
-        "access": "public"
-    },
-    "devDependencies": {
-        "@eliware/test": "^6.0.1",
-        "typescript": "^7.0.2"
-    },
-    "dependencies": {
-        "@eliware/log": "^2.4.0"
-    },
-    "prettier": {
-      "printWidth": 100,
-      "tabWidth": 2,
-      "useTabs": false,
-      "semi": true,
-      "singleQuote": false,
-      "quoteProps": "as-needed",
-      "jsxSingleQuote": false,
-      "trailingComma": "all",
-      "bracketSpacing": true,
-      "bracketSameLine": false,
-      "arrowParens": "always",
-      "proseWrap": "preserve",
-      "endOfLine": "lf"
-    },
-    "eliware": {
-      "id": "E-105",
-      "apply": ["general", "library", "npm-published"]
+    "coverageReporters": [
+      "text",
+      "json-summary"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      }
     }
+  },
+  "prettier": {
+    "printWidth": 100,
+    "tabWidth": 2,
+    "useTabs": false,
+    "semi": true,
+    "singleQuote": false,
+    "quoteProps": "as-needed",
+    "jsxSingleQuote": false,
+    "trailingComma": "all",
+    "bracketSpacing": true,
+    "bracketSameLine": false,
+    "arrowParens": "always",
+    "proseWrap": "preserve",
+    "endOfLine": "lf"
+  },
+  "author": "Eliware <eliware@eliware.org>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eliware/signals.git"
+  },
+  "homepage": "https://github.com/eliware/signals#readme",
+  "bugs": {
+    "url": "https://github.com/eliware/signals/issues"
+  },
+  "eliware": {
+    "id": "E-105",
+    "apply": [
+      "general",
+      "library",
+      "npm-published"
+    ]
+  },
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.mjs"
+    }
+  }
 }
