@@ -19,7 +19,9 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
     shuttingDown = true;
     log.debug(`Received ${receivedSignal}. Shutting down gracefully...`);
     shutdownPromise = runHooks(receivedSignal).then(() => {
-      if (exit && typeof processObj.exit === "function") processObj.exit(exitCode);
+      if (receivedSignal !== "manual" && exit && typeof processObj.exit === "function") {
+        processObj.exit(exitCode);
+      }
     });
     return shutdownPromise;
   };

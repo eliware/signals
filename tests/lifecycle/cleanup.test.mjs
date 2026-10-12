@@ -73,7 +73,7 @@ test("allows re-registration after cleanup without off", () => {
 test("supports process objects without exit or off", async () => {
   const processObj = { on: jest.fn() };
   const registration = registerSignals({ processObj, log: makeLog(), signals: [] });
-  await registration.shutdown("manual");
+  await registration.shutdown("SIGTERM");
   registration.removeHandlers();
   expect(registration.removed).toBe(true);
 });

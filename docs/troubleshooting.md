@@ -20,7 +20,7 @@ Check that the registration has not been removed or aborted.
 Check that `exit` is not `false`.
 Check that `processObj.exit` exists.
 The package calls `exit` only after signal cleanup.
-Manual calls to `shutdown()` do not call `exit`.
+A default `shutdown()` call uses `manual` and does not call `exit`.
 
 ## A hook does not finish
 

@@ -24,6 +24,16 @@ test("runs hooks in order and isolates failures", async () => {
   expect(log.warn).toHaveBeenCalled();
 });
 
+test("does not exit after manual shutdown", async () => {
+  const processObj = { on: jest.fn(), off: jest.fn(), exit: jest.fn() };
+  const log = { debug: jest.fn(), warn: jest.fn(), error: jest.fn() };
+  const hook = jest.fn();
+  const registration = registerSignals({ processObj, log, signals: [], shutdownHook: hook });
+  await registration.shutdown();
+  expect(hook).toHaveBeenCalledWith("manual");
+  expect(processObj.exit).not.toHaveBeenCalled();
+});
+
 test("runs hooks once on beforeExit", async () => {
   const hook = jest.fn();
   const lifecycle = createShutdown({
