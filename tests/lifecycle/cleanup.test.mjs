@@ -47,10 +47,17 @@ test("supports cleanup, abort, and shutdown without process exit", async () => {
 
   const already = new AbortController();
   already.abort();
+  const alreadyAbortedProcess = makeProcess();
   expect(
-    registerSignals({ processObj: makeProcess(), log, signals: [], signal: already.signal })
-      .removed,
+    registerSignals({
+      processObj: alreadyAbortedProcess,
+      log,
+      signals: [],
+      signal: already.signal,
+    }).removed,
   ).toBe(true);
+  const afterAbort = registerSignals({ processObj: alreadyAbortedProcess, log, signals: [] });
+  expect(afterAbort.removed).toBe(false);
 });
 
 test("removes registrations only for the current API", () => {

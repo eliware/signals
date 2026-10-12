@@ -50,6 +50,32 @@ test("runs hooks once on beforeExit", async () => {
   expect(hook).toHaveBeenCalledTimes(1);
 });
 
+test("keeps the event loop active until beforeExit hooks finish", async () => {
+  let finishHook;
+  const hook = () => new Promise((resolve) => (finishHook = resolve));
+  const setTimer = jest.spyOn(globalThis, "setInterval").mockReturnValue(1);
+  const clearTimer = jest.spyOn(globalThis, "clearInterval").mockImplementation(() => undefined);
+  const lifecycle = createShutdown({
+    hooks: [hook],
+    log: { debug: jest.fn(), warn: jest.fn(), error: jest.fn() },
+    processObj: {},
+    exit: false,
+    exitCode: 0,
+  });
+  try {
+    const pending = lifecycle.onBeforeExit(0);
+    expect(setTimer).toHaveBeenCalledWith(expect.any(Function), 2 ** 31 - 1);
+    setTimer.mock.calls[0][0]();
+    expect(clearTimer).not.toHaveBeenCalled();
+    finishHook();
+    await pending;
+    expect(clearTimer).toHaveBeenCalledWith(1);
+  } finally {
+    setTimer.mockRestore();
+    clearTimer.mockRestore();
+  }
+});
+
 test("allows a hook to await shutdown during beforeExit", async () => {
   const processObj = { on: jest.fn(), off: jest.fn(), exit: jest.fn() };
   const log = { debug: jest.fn(), warn: jest.fn(), error: jest.fn() };

@@ -31,7 +31,8 @@ Call `shutdown()` to start manual shutdown and wait for all hooks.
 
 The package runs hooks for `beforeExit` when shutdown has not started.
 Node.js does not wait for promises that an event listener returns.
-Schedule required asynchronous work before the event loop becomes empty.
+The package keeps the event loop active until these hooks finish.
+Keep these hooks bounded so the process can exit promptly.
 Do not use the Node.js `exit` event for asynchronous cleanup.
 
 ## Remove handlers

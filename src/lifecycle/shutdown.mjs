@@ -47,7 +47,10 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
       resolveShutdown = resolve;
       rejectShutdown = reject;
     });
-    runHooks("beforeExit").then(resolveShutdown, rejectShutdown);
+    const keepAlive = setInterval(() => {}, 2 ** 31 - 1);
+    runHooks("beforeExit")
+      .finally(() => clearInterval(keepAlive))
+      .then(resolveShutdown, rejectShutdown);
     return shutdownPromise;
   };
 
