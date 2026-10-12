@@ -13,6 +13,7 @@ The package removes duplicate names and keeps their first order.
 The first signal request starts shutdown.
 The package runs each hook once.
 It calls `processObj.exit(exitCode)` when `exit` is `true` and the method exists.
+Later signal requests also exit the process after hooks finish.
 Set `exit: false` to keep process exit under your control.
 Set `exitCode` to a finite integer to choose the process exit code.
 

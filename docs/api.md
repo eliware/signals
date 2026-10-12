@@ -45,9 +45,10 @@ Pass `exit: false` to stop the package from calling `processObj.exit`.
 After removal, new `shutdown()` calls resolve without starting hooks.
 The first shutdown request sets the signal name for all hooks.
 Later or concurrent requests use the first request's promise.
+A signal request still triggers process exit after hooks finish.
 A shutdown hook can call and await `shutdown()`. That nested call resolves at once.
 The package logs a warning for duplicate requests.
-Each hook error is logged. A hook error does not stop later hooks.
+Each hook error is logged. Hook or logger errors do not stop later hooks.
 The package rejects invalid options with a `TypeError`.
 
 See the [TypeScript declarations](../src/index.d.ts) for complete types.

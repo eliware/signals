@@ -2,9 +2,13 @@ import { expect, test, jest } from "@jest/globals";
 import { createShutdown } from "../../src/lifecycle/shutdown.mjs";
 import registerSignals from "../../src/index.mjs";
 
+const makeLog = (error = jest.fn()) => ({ debug: jest.fn(), warn: jest.fn(), error });
+const makeLifecycle = (hooks, options = {}) =>
+  createShutdown({ hooks, log: makeLog(), processObj: {}, exit: false, exitCode: 0, ...options });
+
 test("runs hooks in order and isolates failures", async () => {
   const calls = [];
-  const log = { debug: jest.fn(), warn: jest.fn(), error: jest.fn() };
+  const log = makeLog();
   const shutdown = createShutdown({
     hooks: [
       async () => {
@@ -36,13 +40,7 @@ test("does not exit after manual shutdown", async () => {
 
 test("does not start shutdown after deactivation", async () => {
   const hook = jest.fn();
-  const lifecycle = createShutdown({
-    hooks: [hook],
-    log: { debug: jest.fn(), warn: jest.fn(), error: jest.fn() },
-    processObj: {},
-    exit: false,
-    exitCode: 0,
-  });
+  const lifecycle = makeLifecycle([hook]);
   lifecycle.deactivate();
   await lifecycle.shutdown();
   expect(lifecycle.onBeforeExit(0)).toBeUndefined();
@@ -51,13 +49,7 @@ test("does not start shutdown after deactivation", async () => {
 
 test("runs hooks once on beforeExit", async () => {
   const hook = jest.fn();
-  const lifecycle = createShutdown({
-    hooks: [hook],
-    log: { debug: jest.fn(), warn: jest.fn(), error: jest.fn() },
-    processObj: {},
-    exit: false,
-    exitCode: 0,
-  });
+  const lifecycle = makeLifecycle([hook]);
   const first = lifecycle.onBeforeExit(0);
   const second = lifecycle.onBeforeExit(0);
   await first;
@@ -85,13 +77,7 @@ test("keeps the event loop active until beforeExit hooks finish", async () => {
   const hook = () => new Promise((resolve) => (finishHook = resolve));
   const setTimer = jest.spyOn(globalThis, "setInterval").mockReturnValue(1);
   const clearTimer = jest.spyOn(globalThis, "clearInterval").mockImplementation(() => undefined);
-  const lifecycle = createShutdown({
-    hooks: [hook],
-    log: { debug: jest.fn(), warn: jest.fn(), error: jest.fn() },
-    processObj: {},
-    exit: false,
-    exitCode: 0,
-  });
+  const lifecycle = makeLifecycle([hook]);
   try {
     const pending = lifecycle.onBeforeExit(0);
     expect(setTimer).toHaveBeenCalledWith(expect.any(Function), 2 ** 31 - 1);
@@ -104,6 +90,61 @@ test("keeps the event loop active until beforeExit hooks finish", async () => {
     setTimer.mockRestore();
     clearTimer.mockRestore();
   }
+});
+
+test("clears the event loop timer and runs later hooks when the logger fails", async () => {
+  const calls = [];
+  const setTimer = jest.spyOn(globalThis, "setInterval").mockReturnValue(1);
+  const clearTimer = jest.spyOn(globalThis, "clearInterval").mockImplementation(() => undefined);
+  const lifecycle = makeLifecycle(
+    [
+      () => {
+        throw new Error("hook failed");
+      },
+      () => calls.push("next"),
+    ],
+    {
+      log: makeLog(() => {
+        throw new Error("logger failed");
+      }),
+    },
+  );
+  try {
+    const pending = lifecycle.onBeforeExit(0);
+    await pending;
+    expect(calls).toEqual(["next"]);
+    expect(clearTimer).toHaveBeenCalledWith(1);
+  } finally {
+    setTimer.mockRestore();
+    clearTimer.mockRestore();
+  }
+});
+
+test("exits after hooks when a signal arrives during beforeExit", async () => {
+  const processObj = { on: jest.fn(), off: jest.fn(), exit: jest.fn() };
+  const log = { debug: jest.fn(), warn: jest.fn(), error: jest.fn() };
+  let finishHook;
+  const hook = jest.fn(() => new Promise((resolve) => (finishHook = resolve)));
+  registerSignals({ processObj, log, signals: ["SIGTERM"], shutdownHook: hook });
+  const beforeExit = processObj.on.mock.calls.find(([event]) => event === "beforeExit")[1];
+  const onSignal = processObj.on.mock.calls.find(([event]) => event === "SIGTERM")[1];
+  const pending = beforeExit(0);
+  onSignal();
+  expect(processObj.exit).not.toHaveBeenCalled();
+  finishHook();
+  await pending;
+  expect(processObj.exit).toHaveBeenCalledWith(0);
+});
+
+test("exits when a signal arrives after beforeExit hooks finish", async () => {
+  const processObj = { on: jest.fn(), off: jest.fn(), exit: jest.fn() };
+  const log = { debug: jest.fn(), warn: jest.fn(), error: jest.fn() };
+  registerSignals({ processObj, log, signals: ["SIGTERM"] });
+  const beforeExit = processObj.on.mock.calls.find(([event]) => event === "beforeExit")[1];
+  const onSignal = processObj.on.mock.calls.find(([event]) => event === "SIGTERM")[1];
+  await beforeExit(0);
+  onSignal();
+  expect(processObj.exit).toHaveBeenCalledWith(0);
 });
 
 test("allows a hook to await shutdown during beforeExit", async () => {
@@ -143,7 +184,7 @@ test("prevents concurrent public shutdown and uses its first exit code", async (
 
 test("does not rerun public hooks after beforeExit", async () => {
   const processObj = { on: jest.fn(), off: jest.fn(), exit: jest.fn() };
-  const log = { debug: jest.fn(), warn: jest.fn(), error: jest.fn() };
+  const log = makeLog();
   const hook = jest.fn();
   const registration = registerSignals({ processObj, log, signals: [], shutdownHook: hook });
   const beforeExit = processObj.on.mock.calls.find(([event]) => event === "beforeExit")[1];

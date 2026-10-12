@@ -4,22 +4,37 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
   let shuttingDown = false;
   let active = true;
   let shutdownPromise;
+  let hooksFinished = false;
+  let exitRequested = false;
+  let exitCalled = false;
   const hookContext = new AsyncLocalStorage();
+
+  const exitProcess = () => {
+    if (!exitRequested || !exit || typeof processObj.exit !== "function" || exitCalled) return;
+    exitCalled = true;
+    processObj.exit(exitCode);
+  };
 
   const runHooks = async (receivedSignal) => {
     for (const hook of hooks) {
       try {
         await hookContext.run(true, () => hook(receivedSignal));
       } catch (err) {
-        log.error("Error during shutdown hook:", err);
+        try {
+          log.error("Error during shutdown hook:", err);
+        } catch {
+          // Continue with the next hook when the logger fails.
+        }
       }
     }
   };
   const shutdown = (receivedSignal = "manual") => {
     if (!active) return Promise.resolve();
+    if (receivedSignal !== "manual") exitRequested = true;
     if (shutdownPromise) {
       if (hookContext.getStore()) return Promise.resolve();
       log.warn(`Received ${receivedSignal} again, but already shutting down.`);
+      if (hooksFinished) exitProcess();
       return shutdownPromise;
     }
     shuttingDown = true;
@@ -32,9 +47,8 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
     });
     runHooks(receivedSignal)
       .then(() => {
-        if (receivedSignal !== "manual" && exit && typeof processObj.exit === "function") {
-          processObj.exit(exitCode);
-        }
+        hooksFinished = true;
+        exitProcess();
       })
       .then(resolveShutdown, rejectShutdown);
     return shutdownPromise;
@@ -53,6 +67,10 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
     const keepAlive = setInterval(() => {}, 2 ** 31 - 1);
     runHooks("beforeExit")
       .finally(() => clearInterval(keepAlive))
+      .then(() => {
+        hooksFinished = true;
+        exitProcess();
+      })
       .then(resolveShutdown, rejectShutdown);
     return shutdownPromise;
   };
