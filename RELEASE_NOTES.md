@@ -8,18 +8,26 @@
 
 ## 12.0.0 — 2026-10-12
 
+### Added
+
+- Split lifecycle code into focused modules with matching tests.
+- Add API, usage, lifecycle, and troubleshooting guides.
+- Add continuous integration and tag-based npm publication workflows.
+- Add the Knit deployment workflow and standard documentation indexes.
+
 ### Changed
 
-- Align package metadata, validation commands, documentation, and workflows with v12 conventions.
-- Upgrade `@eliware/log` and `@eliware/test` to version 12.
+- Align package metadata, validation, formatting, and repository files with v12 conventions.
+- Upgrade `@eliware/log` and `@eliware/test` to version 12. Refresh the lockfile.
+- Update the README, examples, TypeScript declarations, and package contents.
 - This package version is an unpublished candidate pending publication.
 
-## 2.1.0 — 2026-09-02
+### Fixed
 
-### Changed
-
-- Split signal lifecycle behavior into focused modules and matching tests.
-- Strengthen lifecycle validation, `beforeExit` handling, signal isolation, and package contents.
+- Prevent removed signal handlers from starting shutdown hooks.
+- Keep manual shutdown from exiting the process.
+- Await asynchronous hooks during `beforeExit` and avoid shutdown promise deadlocks.
+- Run hooks when the logger fails. Exit after hooks when a signal arrives during or after `beforeExit`.
 
 ## 2.0.0 — 2026-08-25
 
