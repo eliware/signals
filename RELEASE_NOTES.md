@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- Prevent stale signal listeners from running shutdown hooks after cleanup.
+- Reject shutdown hooks added after shutdown starts.
 
 ## 12.0.0 — 2026-10-12
 
