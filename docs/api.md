@@ -1,7 +1,7 @@
 # API reference
 
 Import `registerSignals` from `@eliware/signals`. Call it with an options object.
-The call returns one registration object for each active process object.
+The call returns one registration for each process object.
 
 ```js
 import registerSignals from "@eliware/signals";
@@ -26,29 +26,31 @@ const registration = registerSignals({
 The logger must provide `debug`, `warn`, and `error` methods.
 The process object must provide `on`. It can also provide `off` and `exit`.
 Each signal name must be a string. The package removes duplicate names and keeps their first order.
+
 Pass an empty `signals` array to disable signal handlers.
-The package still adds its `beforeExit` handler.
+The package also adds its `beforeExit` handler.
 Pass a synchronous or asynchronous function as `shutdownHook`.
-The hook receives the signal name as its only argument.
-Pass `exit: false` to stop the package from calling `processObj.exit`.
+The cleanup function receives the signal name as its only argument.
+Pass `exit: false` to prevent the package from calling `processObj.exit`.
 
 ## Return value
 
-| Member              | Type              | Purpose                                         |
-| ------------------- | ----------------- | ----------------------------------------------- |
-| `shutdown(signal?)` | Promise           | Run hooks once and resolve after they finish.   |
-| `getShuttingDown()` | Boolean           | Report whether shutdown has started.            |
-| `removeHandlers()`  | Function          | Remove or disable this registration's handlers. |
-| `removed`           | Read-only Boolean | Report whether this registration was removed.   |
+| Member              | Type              | Purpose                                             |
+| ------------------- | ----------------- | --------------------------------------------------- |
+| `shutdown(signal?)` | Promise           | Run cleanup functions once. Resolve after they end. |
+| `getShuttingDown()` | Boolean           | Report if shutdown has started.                     |
+| `removeHandlers()`  | Function          | Remove or disable this registration's handlers.     |
+| `removed`           | Read-only Boolean | Report if this registration was removed.            |
 
 `shutdown()` uses `manual` as its default label. A manual label does not call `processObj.exit`.
-After removal, new `shutdown()` calls resolve without starting hooks.
-The first shutdown request sets the signal name for all hooks.
-Later or concurrent requests use the first request's promise.
-Only a configured signal event triggers process exit after hooks finish.
-A shutdown hook can call and await `shutdown()`. That nested call resolves at once.
-The package logs a warning for duplicate requests.
-Each hook error is logged. Hook or logger errors do not stop later hooks.
+After removal, new `shutdown()` calls resolve without running cleanup functions.
+The first shutdown request gives each cleanup function the same label.
+Later requests use the first request's promise.
+Only a configured signal event triggers process exit after cleanup ends.
+
+A cleanup function can call and await `shutdown()`. The nested call resolves at once.
+The package logs a warning for repeated requests.
+Errors from cleanup functions or logger methods do not stop later cleanup functions.
 The package rejects invalid options with a `TypeError`.
 
 See the [TypeScript declarations](../src/index.d.ts) for complete types.

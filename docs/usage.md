@@ -11,7 +11,7 @@ Run this command in your project:
 npm install @eliware/signals
 ```
 
-Import `registerSignals` from the package root. Pass a `shutdownHook` function to run cleanup work.
+Import `registerSignals` from the package root. Pass a cleanup function as `shutdownHook`.
 
 ```js
 import log from "@eliware/log";
@@ -27,16 +27,16 @@ const registration = registerSignals({
 ```
 
 The package handles `SIGTERM`, `SIGINT`, and `SIGHUP` by default.
-It runs hooks for the first shutdown request.
+It runs cleanup functions for the first shutdown request.
 The default exit code is `0`.
 The package calls `process.exit(0)` after signal cleanup when that method exists.
 
 ## Keep control of process exit
 
-Set `exit` to `false` when your application controls process exit.
-Call `shutdown()` to run cleanup and wait for every hook.
+Set `exit` to `false` when your app controls process exit.
+Call `shutdown()` to run cleanup and wait for each cleanup function to complete.
 Pass a label to `shutdown()` to name a manual request. A label does not trigger process exit.
-Call `removeHandlers()` after cleanup when you no longer need the registration.
+Call `removeHandlers()` after cleanup when you no longer require the registration.
 
 ```js
 const registration = registerSignals({
@@ -48,13 +48,13 @@ await registration.shutdown("manual");
 registration.removeHandlers();
 ```
 
-## Add another hook
+## Add a cleanup function
 
-Call `registerSignals()` again with the same process object to add another hook.
-The package runs hooks in the order of registration.
+Call `registerSignals()` again with the same process object to add a cleanup function.
+The package runs cleanup functions in registration order.
 Keep each lifecycle option the same when you set it again.
-The package rejects a conflicting value with a `TypeError`.
+The package rejects conflicting values with a `TypeError`.
 
 See the [API reference](api.md) for all options.
 See [shutdown behavior](lifecycle.md) for signal and cleanup details.
-See the [example](../examples/example.mjs) for a complete program.
+See the [example](../examples/example.mjs) for a complete app.

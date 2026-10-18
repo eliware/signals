@@ -90,7 +90,7 @@ describe("registerSignals", () => {
     expect(getShuttingDown()).toBe(true);
     expect(hook).toHaveBeenCalledWith("SIGTERM");
     expect(mocklog.debug).toHaveBeenCalledWith("Received SIGTERM. Shutting down gracefully...");
-    expect(mocklog.warn).toHaveBeenCalledWith("Received SIGTERM again, but already shutting down.");
+    expect(mocklog.warn).toHaveBeenCalledWith("Received SIGTERM during shutdown.");
     expect(mockProcess.exit).not.toHaveBeenCalled();
   });
 
@@ -132,7 +132,7 @@ describe("registerSignals", () => {
       shutdownHook: hook,
     });
     await handler(mockProcess, "SIGTERM")();
-    expect(mocklog.error).toHaveBeenCalledWith("Error during shutdown hook:", error);
+    expect(mocklog.error).toHaveBeenCalledWith("Error in shutdown cleanup function:", error);
     expect(mockProcess.exit).toHaveBeenCalledWith(0);
   });
 
@@ -163,6 +163,6 @@ describe("registerSignals", () => {
       },
     });
     await handler(mockProcess, "beforeExit")(1);
-    expect(mocklog.error).toHaveBeenCalledWith("Error during shutdown hook:", error);
+    expect(mocklog.error).toHaveBeenCalledWith("Error in shutdown cleanup function:", error);
   });
 });

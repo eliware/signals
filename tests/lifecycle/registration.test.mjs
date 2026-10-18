@@ -21,7 +21,7 @@ test("rejects a shutdown hook after shutdown starts", async () => {
   const registration = registerSignals({ processObj, log, signals: [] });
   await registration.shutdown();
   expect(() => registerSignals({ processObj, log, signals: [], shutdownHook() {} })).toThrow(
-    "Cannot add a shutdown hook after shutdown starts",
+    "Cannot add a cleanup function after shutdown starts",
   );
 });
 

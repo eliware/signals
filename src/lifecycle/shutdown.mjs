@@ -27,7 +27,7 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
       try {
         await hookContext.run(true, () => hook(receivedSignal));
       } catch (err) {
-        logSafely("error", "Error during shutdown hook:", err);
+        logSafely("error", "Error in shutdown cleanup function:", err);
       }
     }
   };
@@ -35,7 +35,7 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
     if (!active) return Promise.resolve();
     if (shutdownPromise) {
       if (hookContext.getStore()) return Promise.resolve();
-      logSafely("warn", `Received ${receivedSignal} again, but already shutting down.`);
+      logSafely("warn", `Received ${receivedSignal} during shutdown.`);
       if (hooksFinished) exitProcess();
       return shutdownPromise;
     }

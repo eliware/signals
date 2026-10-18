@@ -187,7 +187,7 @@ test("prevents concurrent public shutdown and uses its first label", async () =>
   await Promise.all([one, two]);
   expect(second).toHaveBeenCalledWith("SIGTERM");
   expect(processObj.exit).not.toHaveBeenCalled();
-  expect(log.warn).toHaveBeenCalledWith("Received SIGINT again, but already shutting down.");
+  expect(log.warn).toHaveBeenCalledWith("Received SIGINT during shutdown.");
 });
 test("does not rerun public hooks after beforeExit", async () => {
   const hook = jest.fn();

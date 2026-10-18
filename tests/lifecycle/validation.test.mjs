@@ -46,7 +46,7 @@ test("validates the public logger and lifecycle options", () => {
       processObj: makeProcess(),
       log: { debug: jest.fn(), warn: jest.fn() },
     }),
-  ).toThrow("log.error must be a function");
+  ).toThrow("Logger method error must be a function");
   expect(() => registerSignals(null)).toThrow("options must be an object");
   expect(() => registerSignals({ processObj: {}, log: makeLog() })).toThrow(
     "processObj.on must be a function",

@@ -1,10 +1,16 @@
 # Release Notes
 
-## Unreleased
+## 13.0.0 — 2026-10-17
+
+### Changed
+
+- Set the package version to 13.0.0.
+- Update repository guidance and workflows for Convention v13.
 
 ### Fixed
 
-- Reject shutdown hooks added after shutdown starts.
+- Reject a new shutdown function after shutdown starts.
+- Keep manual request labels from calling `processObj.exit`.
 
 ## 12.0.0 — 2026-10-12
 
@@ -20,14 +26,13 @@
 - Align package metadata, validation, formatting, and repository files with v12 conventions.
 - Upgrade `@eliware/log` and `@eliware/test` to version 12. Refresh the lockfile.
 - Update the README, examples, TypeScript declarations, and package contents.
-- This package version is an unpublished candidate pending publication.
 
 ### Fixed
 
 - Prevent removed signal handlers from starting shutdown hooks.
 - Keep manual shutdown from exiting the process.
-- Await asynchronous hooks during `beforeExit` and avoid shutdown promise deadlocks.
-- Run hooks when the logger fails. Exit after hooks when a signal arrives during or after `beforeExit`.
+- Wait for asynchronous shutdown functions during `beforeExit` and prevent shutdown promise deadlocks.
+- Continue after logger errors. Exit after cleanup when a signal arrives during or after `beforeExit`.
 
 ## 2.0.0 — 2026-08-25
 
@@ -40,52 +45,3 @@
 ### Breaking changes
 
 - Require the documented ESM API and Node.js 26 or later.
-
-## 1.1.7 — 2026-08-10
-
-### Fixed
-
-- Fix the runnable example import path and disable process exit in the example.
-- Validate injected logger methods and align TypeScript process and logger types.
-
-## 1.1.6 — 2026-08-07
-
-### Changed
-
-- Standardize package layout, validation, TypeScript checks, CI, and package contents.
-- Expand operational, troubleshooting, development, and security guidance.
-
-## 1.1.5 — 2026-08-07
-
-### Changed
-
-- Upgrade `@eliware/log` to version 1.1.10.
-
-## 1.1.4 — 2026-08-06
-
-### Added
-
-- Add repository guidance for development, lifecycle behavior, validation, API compatibility, and releases.
-
-## 1.1.3 — 2026-08-06
-
-### Added
-
-- Add repeat-safe registration, listener cleanup, abort cleanup, signal validation, and shutdown hooks.
-- Add concurrent shutdown protection, hook error isolation, exit codes, and a non-exiting mode.
-
-### Changed
-
-- Update declarations, documentation, examples, coverage checks, and Node.js CI.
-
-## 1.1.2 — 2026-07-01
-
-### Changed
-
-- Refresh package metadata, dependencies, and lockfile.
-
-## 1.1.1 — 2025-12-09
-
-### Changed
-
-- Refresh package metadata and dependencies.

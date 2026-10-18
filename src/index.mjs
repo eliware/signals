@@ -41,7 +41,7 @@ export const registerSignals = (options = {}) => {
     if (conflicts) throw new TypeError("Repeated registration must use the same lifecycle options");
     if (shutdownHook) {
       if (registration.api.getShuttingDown()) {
-        throw new TypeError("Cannot add a shutdown hook after shutdown starts");
+        throw new TypeError("Cannot add a cleanup function after shutdown starts");
       }
       registration.hooks.push(shutdownHook);
     }

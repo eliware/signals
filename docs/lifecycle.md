@@ -1,56 +1,61 @@
 # Shutdown behavior
 
-The package listens for the configured signals and the Node.js `beforeExit` event.
-It runs each registered hook in order when shutdown starts.
+The package listens for configured signals and the Node.js `beforeExit` event.
+It runs each cleanup function in order when shutdown starts.
 
 ## Signal requests
 
 The default signals are `SIGTERM`, `SIGINT`, and `SIGHUP`.
-Set `signals` to a string array to choose other signal names.
+Set `signals` to a string array to select signal names.
 Set `signals` to an empty array to disable signal listeners.
 The package removes duplicate names and keeps their first order.
 
 The first signal request starts shutdown.
-The package runs each hook once.
-It calls `processObj.exit(exitCode)` when `exit` is `true` and the method exists.
-Later signal requests also exit the process after hooks finish.
+The package runs each cleanup function one time.
+It calls `processObj.exit(exitCode)` when `exit` is `true` and that method exists.
+Later signal requests also cause process exit after cleanup ends.
 Set `exit: false` to keep process exit under your control.
-Set `exitCode` to a finite integer to choose the process exit code.
+Set `exitCode` to a finite integer to set the process exit code.
 
-## Hook order and errors
+A label passed to `shutdown()` names a manual request.
+A manual label does not cause process exit.
+Only a configured signal event causes process exit.
 
-The package runs hooks in the order that calls add them.
-The package waits for each hook before it runs the next hook.
-If a hook fails, the package logs the error and runs the next hook.
-Keep cleanup work bounded so shutdown can finish promptly.
+## Cleanup order and errors
 
-Only the first shutdown request controls the signal name and promise.
-The package logs a warning when another request arrives during shutdown.
-Call `shutdown()` to start manual shutdown and wait for all hooks.
+The package runs cleanup functions in registration order.
+The package waits for each function to complete before it runs each remaining function.
+If a function fails, the package logs the error. It then runs each remaining function.
+Keep each cleanup task short so shutdown can end promptly.
+
+The first shutdown request sets the label and promise for all cleanup functions.
+A later request causes a warning during shutdown.
+Call `shutdown()` to start manual shutdown and wait for all cleanup functions.
 
 ## `beforeExit` event
 
-The package runs hooks for `beforeExit` when shutdown has not started.
+The package runs cleanup functions for `beforeExit` if shutdown has not started.
 Node.js does not wait for promises that an event listener returns.
-The package keeps the event loop active until these hooks finish.
-Keep these hooks bounded so the process can exit promptly.
+The package keeps the event loop active until cleanup ends.
+Keep cleanup tasks short so the process can exit promptly.
 Do not use the Node.js `exit` event for asynchronous cleanup.
 
 ## Remove handlers
 
 Call `removeHandlers()` to remove a registration.
-New `shutdown()` calls then resolve without starting hooks.
+New `shutdown()` calls then resolve without running cleanup functions.
 Abort the configured `AbortSignal` to remove its handlers.
-An already-aborted signal removes the registration during setup.
+
+If the signal was aborted before setup, the package removes the registration.
 The package detaches listeners when `processObj.off` exists.
 Without `off`, removed listeners stay attached but cannot start shutdown.
-Remove a registration before you add a new one to the same process object.
+Remove a registration before you add a different registration to the same process object.
 
 ## Repeated calls
 
 Each process object can have one active registration.
-Call `registerSignals()` again to add hooks before shutdown starts.
-Keep lifecycle option values the same when you set them again.
+Call `registerSignals()` again to add cleanup functions before shutdown starts.
+Keep lifecycle option values the same each time you call the function.
 Remove the active registration before you set different lifecycle values.
 
 See the [API reference](api.md) for option details.

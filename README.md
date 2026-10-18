@@ -23,9 +23,9 @@ Graceful shutdown signal handler utility for Node.js
 
 ## Features
 
-Handle `SIGTERM`, `SIGINT`, and `SIGHUP`.
-Run ordered cleanup hooks during shutdown.
-Control the exit code or disable process exit.
+The package starts cleanup for `SIGTERM`, `SIGINT`, and `SIGHUP`.
+Run ordered cleanup functions during shutdown.
+Set the exit code or prevent process exit.
 
 ## Requirements
 
@@ -47,8 +47,8 @@ This command installs the current `latest` release from npm.
 Import `registerSignals` from `@eliware/signals`.
 Pass a cleanup function as `shutdownHook`.
 Set `exit: false` when your application controls process exit.
-Call `shutdown()` to run cleanup and wait for completion.
-Call `removeHandlers()` when you no longer need the registration.
+Call `shutdown()` to run cleanup and wait for all cleanup functions to complete.
+Call `removeHandlers()` when you no longer require the registration.
 
 ```js
 import registerSignals from "@eliware/signals";
@@ -62,8 +62,8 @@ registerSignals({
 
 This example requires Node.js 26 or later and native ESM.
 Run it in a project that has this package installed.
-Send `SIGTERM`, `SIGINT`, or `SIGHUP` to run the hook.
-The process exits with code `0` after the hook.
+Send `SIGTERM`, `SIGINT`, or `SIGHUP` to run the cleanup function.
+The process exits with code `0` after the cleanup function completes.
 
 Read the [release notes](RELEASE_NOTES.md) for user-visible changes.
 Read the [user guides](docs/README.md) for full usage details.
@@ -90,10 +90,10 @@ Do not rely on asynchronous cleanup during Node.js `exit` events.
 
 ## API
 
-Call `registerSignals(options?)` to get a registration object.
+Call `registerSignals(options?)` to receive a registration object.
 Options include `processObj`, `log`, `signals`, `shutdownHook`, `exitCode`, `exit`, and `signal`.
-Each hook runs in registration order.
-The package logs hook errors and continues to later hooks.
+Each cleanup function runs in registration order.
+The package logs errors and continues to later cleanup functions.
 Read the [API reference](docs/api.md) and [type declarations](src/index.d.ts) for details.
 
 ## Packaging
