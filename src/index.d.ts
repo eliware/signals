@@ -13,14 +13,14 @@ export interface RegisterSignalsOptions {
   processObj?: ProcessLike;
   log?: SignalsLogger;
   signals?: NodeSignal[];
-  shutdownHook?: (signal: string) => void | Promise<void>;
+  shutdownHook?: (label: string) => void | Promise<void>;
   exitCode?: number;
   exit?: boolean;
   signal?: AbortSignal;
 }
 export interface SignalsRegistration {
   readonly removed: boolean;
-  shutdown(signal?: string): Promise<void>;
+  shutdown(label?: string): Promise<void>;
   getShuttingDown(): boolean;
   removeHandlers(): void;
 }

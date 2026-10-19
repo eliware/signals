@@ -20,6 +20,7 @@ Set `exitCode` to a finite integer to set the process exit code.
 A label passed to `shutdown()` names a manual request.
 A manual label does not cause process exit.
 Only a configured signal event causes process exit.
+The label stays manual when its text matches a configured signal name.
 
 ## Cleanup order and errors
 
