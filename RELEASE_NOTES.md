@@ -1,16 +1,18 @@
 # Release Notes
 
-## 13.0.0 — 2026-10-17
+## 13.0.0 — 2026-10-19
 
 ### Changed
 
-- Set the package version to 13.0.0.
-- Update repository guidance and workflows for Convention v13.
-
-### Fixed
-
-- Reject a new shutdown function after shutdown starts.
-- Keep manual request labels from calling `processObj.exit`.
+- Upgrade `@eliware/log` and `@eliware/test` to version 13. Refresh the lockfile.
+- Align package metadata, specifications, and validation with Convention 13.
+- Clarify manual shutdown labels, repeated registrations, and abort handling in the API documentation.
+- Rewrite user documentation with direct wording and simple steps.
+- Update CI and npm workflows to use checkout v7 and setup-node v7.
+- Fetch full Git history in validation and use the standard npm workflow name.
+- Align the Knit deployment command with the shared workflow.
+- Split registration policy and `beforeExit` timer handling into focused modules.
+- Report invalid logger methods with an error message that names the method.
 
 ## 12.0.0 — 2026-10-12
 
