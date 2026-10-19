@@ -40,8 +40,6 @@ Run this command in your project:
 npm install @eliware/signals
 ```
 
-This command installs the current `latest` release from npm.
-
 ## Usage
 
 Import `registerSignals` from `@eliware/signals`.
@@ -71,7 +69,7 @@ Read the [user guides](docs/README.md) for full usage details.
 ## Development
 
 Run `npm ci` to install the locked development dependencies.
-Run `npm test` before you commit changes.
+Read [AGENTS.md](AGENTS.md) for repository validation commands.
 
 ## Testing
 
