@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
+import { withEventLoopKeepAlive } from "./before-exit.mjs";
 
 export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
   let shuttingDown = false;
@@ -70,9 +71,7 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
       resolveShutdown = resolve;
       rejectShutdown = reject;
     });
-    const keepAlive = setInterval(() => {}, 2 ** 31 - 1);
-    runHooks("beforeExit")
-      .finally(() => clearInterval(keepAlive))
+    withEventLoopKeepAlive(() => runHooks("beforeExit"))
       .then(() => {
         hooksFinished = true;
         exitProcess();

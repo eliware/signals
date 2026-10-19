@@ -7,6 +7,7 @@ import {
   validateLifecycleOptions,
 } from "./lifecycle/validation.mjs";
 import { getRegistration, setRegistration } from "./lifecycle/registration.mjs";
+import { applyRegistrationPolicy } from "./lifecycle/registration-policy.mjs";
 import { createShutdown } from "./lifecycle/shutdown.mjs";
 import { installHandlers } from "./lifecycle/handlers.mjs";
 import { createCleanup } from "./lifecycle/cleanup.mjs";
@@ -30,22 +31,16 @@ export const registerSignals = (options = {}) => {
   const selected = normalizeSignals(signals, defaultSignals);
   let registration = getRegistration(processObj);
   if (registration) {
-    const conflicts =
-      (Object.hasOwn(options, "log") && registration.log !== log) ||
-      (Object.hasOwn(options, "signals") &&
-        (registration.signals.length !== selected.length ||
-          !registration.signals.every((name, index) => name === selected[index]))) ||
-      (Object.hasOwn(options, "exitCode") && registration.exitCode !== exitCode) ||
-      (Object.hasOwn(options, "exit") && registration.exit !== exit) ||
-      (Object.hasOwn(options, "signal") && registration.signal !== signal);
-    if (conflicts) throw new TypeError("Repeated registration must use the same lifecycle options");
-    if (shutdownHook) {
-      if (registration.api.getShuttingDown()) {
-        throw new TypeError("Cannot add a cleanup function after shutdown starts");
-      }
-      registration.hooks.push(shutdownHook);
-    }
-    return registration.api;
+    return applyRegistrationPolicy({
+      options,
+      registration,
+      log,
+      signals: selected,
+      exitCode,
+      exit,
+      signal,
+      shutdownHook,
+    });
   }
 
   const hooks = shutdownHook ? [shutdownHook] : [];
