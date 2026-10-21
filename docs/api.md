@@ -1,7 +1,7 @@
 # API reference
 
 Import `registerSignals` from `@eliware/signals`. Call it with an options object.
-The call returns one registration for each process object.
+Repeated calls with an active process object return its existing registration.
 
 ```js
 import registerSignals from "@eliware/signals";
@@ -50,7 +50,7 @@ Without `off`, the package leaves listeners attached, but they do not start shut
 `shutdown()` uses `manual` as its default label. A manual label does not call `processObj.exit`.
 After removal, new `shutdown()` calls resolve without running cleanup functions.
 The first shutdown request gives each cleanup function the same label.
-Later requests use the first request's promise.
+Later public requests log a warning and use the first request's promise.
 Only a configured signal event triggers process exit after cleanup ends.
 
 A string passed to `shutdown()` names a request only.
@@ -62,7 +62,7 @@ Errors from cleanup functions or logger methods do not stop later cleanup functi
 The package rejects invalid options with a `TypeError`.
 
 Repeated calls with the same process object share one registration.
-Keep each lifecycle option the same on repeated calls.
+If you set a lifecycle option again, use the same value.
 Add cleanup functions before shutdown starts.
 The package rejects a cleanup function added after shutdown starts with a `TypeError`.
 Remove the registration before you set different lifecycle options.

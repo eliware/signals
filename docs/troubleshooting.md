@@ -40,6 +40,8 @@ Set a different logger, signal list, exit code, exit value, or abort signal afte
 Set `processObj` to an object with an `on` method.
 Set `log` to an object with `debug`, `warn`, and `error` methods.
 Set `signals` to an array of strings.
+Set `signal` to an `AbortSignal` instance.
+
 Set `exit` to a Boolean value.
 Set `exitCode` to a finite integer.
 See the [API reference](api.md) for all option types.

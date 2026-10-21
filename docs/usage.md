@@ -19,9 +19,9 @@ import registerSignals from "@eliware/signals";
 
 const registration = registerSignals({
   log,
-  shutdownHook: async (signal) => {
+  shutdownHook: async (label) => {
     await closeDatabase();
-    log.debug(`Cleanup complete after ${signal}`);
+    log.debug(`Cleanup complete after ${label}`);
   },
 });
 ```
@@ -50,9 +50,9 @@ registration.removeHandlers();
 
 ## Add a cleanup function
 
-Call `registerSignals()` again with the same process object to add a cleanup function.
+Call `registerSignals()` again with the same process object and a `shutdownHook` to add a cleanup function.
 The package runs cleanup functions in registration order.
-Keep each lifecycle option the same when you set it again.
+If you set a lifecycle option again, use the same value.
 The package rejects conflicting values with a `TypeError`.
 
 See the [API reference](api.md) for all options.

@@ -30,7 +30,8 @@ If a function fails, the package logs the error. It then runs each remaining fun
 Keep each cleanup task short so shutdown can end promptly.
 
 The first shutdown request sets the label and promise for all cleanup functions.
-A later request causes a warning during shutdown.
+Each later public request logs a warning and uses the first promise.
+Calls from a cleanup function resolve at once and do not log a warning.
 Call `shutdown()` to start manual shutdown and wait for all cleanup functions.
 
 ## `beforeExit` event
@@ -55,8 +56,8 @@ Remove a registration before you add a different registration to the same proces
 ## Repeated calls
 
 Each process object can have one active registration.
-Call `registerSignals()` again to add cleanup functions before shutdown starts.
-Keep lifecycle option values the same each time you call the function.
+Before shutdown starts, call `registerSignals()` again with a `shutdownHook` to add a cleanup function.
+If you set a lifecycle option again, use the same value.
 Remove the active registration before you set different lifecycle values.
 
 See the [API reference](api.md) for option details.
