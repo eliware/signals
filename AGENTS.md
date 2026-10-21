@@ -27,7 +27,6 @@ Run npm run format to format files.
 Run npm run format:check to check formatting.
 
 Run npm run typecheck to check types.
-Run npm run pack to check package contents.
 
 ## Security
 

@@ -100,14 +100,14 @@ The package uses native ESM and requires Node.js 26 or later.
 The runtime entrypoint is `src/index.mjs`.
 The type declarations are `src/index.d.ts`.
 The package includes `src/`, `docs/`, `examples/`, and `specs/`.
-It also includes `README.md`, `AGENTS.md`, `LICENSE`, and `RELEASE_NOTES.md`.
+It also includes `README.md`, `AGENTS.md`, `LICENSE`, `RELEASE_NOTES.md`, and `package.json`.
 
 Use numeric `MAJOR.MINOR.PATCH` versions and matching `v<version>` release tags.
 The npm workflow validates the matching tag and package version before publication.
 Install the public package from [npm](https://www.npmjs.com/package/@eliware/signals).
 Operations controls release approval. Repository validation does not authorize publication.
 
-Read the [documentation index](docs/README.md) and [specification index](specs/README.md).
+Read the [specification index](specs/README.md).
 
 ## Examples
 
