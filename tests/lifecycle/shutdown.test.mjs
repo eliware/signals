@@ -152,6 +152,18 @@ test("exits after hooks when a signal arrives during beforeExit", async () => {
   await pending;
   expect(processObj.exit).toHaveBeenCalledWith(0);
 });
+test("exits after manual shutdown hooks when a signal arrives during cleanup", async () => {
+  let finishHook;
+  const hook = jest.fn(() => new Promise((resolve) => (finishHook = resolve)));
+  const { processObj, registration } = makeRegistration(["SIGTERM"], hook);
+  const onSignal = processObj.on.mock.calls.find(([event]) => event === "SIGTERM")[1];
+  const pending = registration.shutdown();
+  onSignal();
+  expect(processObj.exit).not.toHaveBeenCalled();
+  finishHook();
+  await pending;
+  expect(processObj.exit).toHaveBeenCalledWith(0);
+});
 test("exits when a signal arrives after beforeExit hooks finish", async () => {
   const { processObj } = makeRegistration(["SIGTERM"]);
   const beforeExit = processObj.on.mock.calls.find(([event]) => event === "beforeExit")[1];
