@@ -1,5 +1,5 @@
-import { AsyncLocalStorage } from "node:async_hooks";
 import { withEventLoopKeepAlive } from "./before-exit.mjs";
+import { createHookRunner } from "./hooks.mjs";
 
 export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
   let shuttingDown = false;
@@ -8,7 +8,6 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
   let hooksFinished = false;
   let exitRequested = false;
   let exitCalled = false;
-  const hookContext = new AsyncLocalStorage();
 
   const exitProcess = () => {
     if (!exitRequested || !exit || typeof processObj.exit !== "function" || exitCalled) return;
@@ -23,19 +22,15 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
     }
   };
 
-  const runHooks = async (receivedSignal) => {
-    for (const hook of hooks) {
-      try {
-        await hookContext.run(true, () => hook(receivedSignal));
-      } catch (err) {
-        logSafely("error", "Error in shutdown cleanup function:", err);
-      }
-    }
-  };
+  const hookRunner = createHookRunner({
+    hooks,
+    onError: (error) => logSafely("error", "Error in shutdown cleanup function:", error),
+  });
+  const runHooks = hookRunner.run;
   const shutdown = (receivedSignal = "manual") => {
     if (!active) return Promise.resolve();
     if (shutdownPromise) {
-      if (hookContext.getStore()) return Promise.resolve();
+      if (hookRunner.isRunning()) return Promise.resolve();
       logSafely("warn", `Received ${receivedSignal} during shutdown.`);
       if (hooksFinished) exitProcess();
       return shutdownPromise;

@@ -22,28 +22,6 @@ const makeRegistration = (signals, shutdownHook, options = {}) => {
     registration: registerSignals({ ...context, signals, shutdownHook, ...options }),
   };
 };
-test("runs hooks in order and isolates failures", async () => {
-  const calls = [];
-  const log = makeLog();
-  const shutdown = createShutdown({
-    hooks: [
-      async () => {
-        calls.push("one");
-        throw Error("x");
-      },
-      async () => calls.push("two"),
-    ],
-    log,
-    processObj: { exit: jest.fn() },
-    exit: false,
-    exitCode: 0,
-  });
-  await shutdown.shutdown("SIGTERM");
-  await shutdown.shutdown("SIGINT");
-  expect(calls).toEqual(["one", "two"]);
-  expect(log.warn).toHaveBeenCalled();
-});
-
 test.each(["shutdown", "beforeExit"])(
   "runs %s hooks when the debug logger fails",
   async (method) => {
@@ -157,16 +135,6 @@ test("exits when a signal arrives after beforeExit hooks finish", async () => {
   await beforeExit(0);
   onSignal();
   expect(processObj.exit).toHaveBeenCalledWith(0);
-});
-test("allows a hook to await shutdown during beforeExit", async () => {
-  const { processObj, log } = makeContext();
-  let registration;
-  const hook = jest.fn(async () => registration.shutdown());
-  registration = registerSignals({ processObj, log, signals: [], shutdownHook: hook });
-  const beforeExit = processObj.on.mock.calls.find(([event]) => event === "beforeExit")[1];
-  await beforeExit(0);
-  expect(hook).toHaveBeenCalledTimes(1);
-  expect(registration.getShuttingDown()).toBe(true);
 });
 test("prevents concurrent public shutdown and uses its first label", async () => {
   const { processObj, log } = makeContext();

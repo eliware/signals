@@ -1,8 +1,8 @@
 import { deleteRegistration } from "./registration.mjs";
+import { createAbortCleanup } from "./abort-cleanup.mjs";
 
 export const createCleanup = ({ processObj, signal, listeners, onBeforeExit, deactivate }) => {
   let removed = false;
-  let abortHandler;
 
   const removeHandlers = () => {
     if (removed) return;
@@ -12,19 +12,10 @@ export const createCleanup = ({ processObj, signal, listeners, onBeforeExit, dea
       for (const [name, listener] of listeners) processObj.off(name, listener);
       processObj.off("beforeExit", onBeforeExit);
     }
-    if (signal && abortHandler && typeof signal.removeEventListener === "function") {
-      signal.removeEventListener("abort", abortHandler);
-    }
+    abortCleanup.remove();
     deleteRegistration(processObj);
   };
-  const attachAbortHandler = () => {
-    if (!signal) return;
-    if (signal.aborted) removeHandlers();
-    else {
-      abortHandler = removeHandlers;
-      signal.addEventListener("abort", abortHandler, { once: true });
-    }
-  };
+  const abortCleanup = createAbortCleanup({ signal, onAbort: removeHandlers });
 
-  return { removeHandlers, attachAbortHandler, getRemoved: () => removed };
+  return { removeHandlers, attachAbortHandler: abortCleanup.attach, getRemoved: () => removed };
 };

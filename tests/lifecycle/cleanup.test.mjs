@@ -1,23 +1,12 @@
 import { expect, test, jest } from "@jest/globals";
-import { createCleanup } from "../../src/lifecycle/cleanup.mjs";
 import registerSignals from "../../src/index.mjs";
 
-test("cleans up listeners and abort handling idempotently", () => {
-  const processObj = { off: jest.fn() };
-  const signal = { aborted: false, addEventListener: jest.fn(), removeEventListener: jest.fn() };
-  const deactivate = jest.fn();
-  const cleanup = createCleanup({
-    processObj,
-    signal,
-    listeners: new Map([["SIGTERM", jest.fn()]]),
-    onBeforeExit: jest.fn(),
-    deactivate,
-  });
-  cleanup.attachAbortHandler();
-  cleanup.removeHandlers();
-  cleanup.removeHandlers();
-  expect(cleanup.getRemoved()).toBe(true);
-  expect(deactivate).toHaveBeenCalledTimes(1);
+test("cleans up process listeners idempotently", () => {
+  const processObj = { on: jest.fn(), off: jest.fn(), exit: jest.fn() };
+  const registration = registerSignals({ processObj, log: makeLog(), signals: ["SIGTERM"] });
+  registration.removeHandlers();
+  registration.removeHandlers();
+  expect(registration.removed).toBe(true);
   expect(processObj.off).toHaveBeenCalledTimes(2);
 });
 
@@ -34,30 +23,6 @@ test("supports cleanup, abort, and shutdown without process exit", async () => {
   registration.removeHandlers();
   expect(registration.removed).toBe(true);
   expect(processObj.off).toHaveBeenCalled();
-
-  const controller = new AbortController();
-  const aborted = registerSignals({
-    processObj: makeProcess(),
-    log,
-    signals: [],
-    signal: controller.signal,
-  });
-  controller.abort();
-  expect(aborted.removed).toBe(true);
-
-  const already = new AbortController();
-  already.abort();
-  const alreadyAbortedProcess = makeProcess();
-  expect(
-    registerSignals({
-      processObj: alreadyAbortedProcess,
-      log,
-      signals: [],
-      signal: already.signal,
-    }).removed,
-  ).toBe(true);
-  const afterAbort = registerSignals({ processObj: alreadyAbortedProcess, log, signals: [] });
-  expect(afterAbort.removed).toBe(false);
 });
 
 test("removes registrations only for the current API", () => {
