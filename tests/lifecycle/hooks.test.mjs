@@ -4,7 +4,7 @@ import registerSignals from "../../src/index.mjs";
 
 test("runs hooks in order and continues after failures", async () => {
   const calls = [];
-  const errors = [];
+  const failureCount = { value: 0 };
   const runner = createHookRunner({
     hooks: [
       async () => {
@@ -13,12 +13,11 @@ test("runs hooks in order and continues after failures", async () => {
       },
       async () => calls.push("two"),
     ],
-    onError: (error) => errors.push(error),
+    onError: () => failureCount.value++,
   });
   await runner.run("SIGTERM");
   expect(calls).toEqual(["one", "two"]);
-  expect(errors).toHaveLength(1);
-  expect(errors[0].message).toBe("hook failed");
+  expect(failureCount.value).toBe(1);
   expect(runner.isRunning()).toBe(false);
 });
 

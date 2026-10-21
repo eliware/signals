@@ -33,6 +33,30 @@ test.each(["shutdown", "beforeExit"])(
     expect(hook).toHaveBeenCalledWith(method === "shutdown" ? "manual" : "beforeExit");
   },
 );
+test("logs no cleanup error details and continues with later hooks", async () => {
+  const privateValue = "private-token-value";
+  const error = new Error(`cleanup failed: ${privateValue}`);
+  error.privateField = privateValue;
+  const log = makeLog();
+  const laterHook = jest.fn();
+  const lifecycle = makeLifecycle(
+    [
+      () => {
+        throw error;
+      },
+      laterHook,
+    ],
+    { log },
+  );
+
+  await lifecycle.shutdown();
+
+  expect(log.error).toHaveBeenCalledWith("A shutdown cleanup function failed.");
+  expect(JSON.stringify(log.error.mock.calls)).not.toContain(privateValue);
+  expect(JSON.stringify(log.error.mock.calls)).not.toContain(error.message);
+  expect(JSON.stringify(log.error.mock.calls)).not.toContain(error.stack);
+  expect(laterHook).toHaveBeenCalledWith("manual");
+});
 test("does not exit after manual shutdown", async () => {
   const hook = jest.fn();
   const { processObj, registration } = makeRegistration([], hook);

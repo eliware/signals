@@ -24,7 +24,7 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
 
   const hookRunner = createHookRunner({
     hooks,
-    onError: (error) => logSafely("error", "Error in shutdown cleanup function:", error),
+    onError: () => logSafely("error", "A shutdown cleanup function failed."),
   });
   const runHooks = hookRunner.run;
   const shutdown = (receivedSignal = "manual") => {

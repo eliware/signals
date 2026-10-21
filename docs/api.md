@@ -13,15 +13,15 @@ const registration = registerSignals({
 
 ## Options
 
-| Option         | Type                | Default                       | Purpose                                  |
-| -------------- | ------------------- | ----------------------------- | ---------------------------------------- |
-| `processObj`   | Process-like object | Node.js `process`             | Set the event source.                    |
-| `log`          | Logger object       | `@eliware/log`                | Set the logger for status and errors.    |
-| `signals`      | String array        | `SIGTERM`, `SIGINT`, `SIGHUP` | Set the signals that start shutdown.     |
-| `shutdownHook` | Function            | None                          | Add cleanup work.                        |
-| `exitCode`     | Finite integer      | `0`                           | Set the code for process exit.           |
-| `exit`         | Boolean             | `true`                        | Allow process exit after signal cleanup. |
-| `signal`       | `AbortSignal`       | None                          | Remove handlers when this signal aborts. |
+| Option         | Type                | Default                       | Purpose                                             |
+| -------------- | ------------------- | ----------------------------- | --------------------------------------------------- |
+| `processObj`   | Process-like object | Node.js `process`             | Set the event source.                               |
+| `log`          | Logger object       | `@eliware/log`                | Set the logger for status and safe failure notices. |
+| `signals`      | String array        | `SIGTERM`, `SIGINT`, `SIGHUP` | Set the signals that start shutdown.                |
+| `shutdownHook` | Function            | None                          | Add cleanup work.                                   |
+| `exitCode`     | Finite integer      | `0`                           | Set the code for process exit.                      |
+| `exit`         | Boolean             | `true`                        | Allow process exit after signal cleanup.            |
+| `signal`       | `AbortSignal`       | None                          | Remove handlers when this signal aborts.            |
 
 The logger must provide `debug`, `warn`, and `error` methods.
 The process object must provide `on`. It can also provide `off` and `exit`.
@@ -58,7 +58,8 @@ It does not simulate a signal event.
 
 A cleanup function can call and await `shutdown()`. The nested call resolves at once.
 The package logs a warning for repeated requests.
-Errors from cleanup functions or logger methods do not stop later cleanup functions.
+If a cleanup function fails, the package logs a fixed notice without the error message, stack, or custom fields.
+It continues to later cleanup functions if the logger fails.
 The package rejects invalid options with a `TypeError`.
 
 Repeated calls with the same process object share one registration.

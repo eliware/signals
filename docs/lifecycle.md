@@ -26,7 +26,8 @@ The label stays manual when its text matches a configured signal name.
 
 The package runs cleanup functions in registration order.
 The package waits for each function to complete before it runs each remaining function.
-If a function fails, the package logs the error. It then runs each remaining function.
+If a function fails, the package logs a fixed notice without the error message, stack, or custom fields.
+It then runs each remaining function.
 Keep each cleanup task short so shutdown can end promptly.
 
 The first shutdown request sets the label and promise for all cleanup functions.

@@ -21,6 +21,7 @@
 ### Fixed
 
 - Name invalid logger methods in validation error messages.
+- Log a fixed shutdown failure notice without cleanup error messages, stacks, or custom fields.
 
 ## 12.0.0 — 2026-10-12
 

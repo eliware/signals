@@ -91,7 +91,7 @@ Do not rely on asynchronous cleanup during Node.js `exit` events.
 Call `registerSignals(options?)` to receive a registration object.
 Options include `processObj`, `log`, `signals`, `shutdownHook`, `exitCode`, `exit`, and `signal`.
 Each cleanup function runs in registration order.
-The package logs errors and continues to later cleanup functions.
+If a cleanup function fails, the package logs a fixed notice without error details and continues.
 Read the [API reference](docs/api.md) and [type declarations](src/index.d.ts) for details.
 
 ## Packaging

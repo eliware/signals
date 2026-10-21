@@ -7,8 +7,8 @@ export const createHookRunner = ({ hooks, onError }) => {
     for (const hook of hooks) {
       try {
         await hookContext.run(true, () => hook(receivedSignal));
-      } catch (error) {
-        onError(error);
+      } catch {
+        onError();
       }
     }
   };

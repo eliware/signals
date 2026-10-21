@@ -132,7 +132,7 @@ describe("registerSignals", () => {
       shutdownHook: hook,
     });
     await handler(mockProcess, "SIGTERM")();
-    expect(mocklog.error).toHaveBeenCalledWith("Error in shutdown cleanup function:", error);
+    expect(mocklog.error).toHaveBeenCalledWith("A shutdown cleanup function failed.");
     expect(mockProcess.exit).toHaveBeenCalledWith(0);
   });
 
@@ -163,6 +163,6 @@ describe("registerSignals", () => {
       },
     });
     await handler(mockProcess, "beforeExit")(1);
-    expect(mocklog.error).toHaveBeenCalledWith("Error in shutdown cleanup function:", error);
+    expect(mocklog.error).toHaveBeenCalledWith("A shutdown cleanup function failed.");
   });
 });
