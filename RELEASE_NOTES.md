@@ -1,10 +1,10 @@
 # Release Notes
 
-## 14.0.0 — 2026-10-20
+## 14.0.0 — 2026-10-21
 
 ### Added
 
-- Add focused modules and tests for registration policy and `beforeExit` timer handling.
+- Add focused modules and tests for registration policy, `beforeExit` timer handling, shutdown callbacks, and abort cleanup.
 
 ### Changed
 
@@ -15,6 +15,8 @@
 - Update CI and npm workflows to use checkout v7 and setup-node v7.
 - Fetch full Git history in validation and use the standard npm workflow name.
 - Align the Knit deployment command with the shared workflow.
+- Separate shutdown state and exit policy from ordered callback execution. Keep error handling and nested shutdown context in a focused module.
+- Separate process listener removal from abort listener management.
 
 ### Fixed
 
