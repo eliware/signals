@@ -2,11 +2,11 @@
 
 ## Project
 
-See README.md for repository purpose, ownership, and scope.
+See README.md for the repository purpose, owner, scope, and boundaries.
 
 ## Scope and boundaries
 
-Keep requirements in their authoritative specifications.
+Keep repository requirements in specs/directives.yaml.
 
 ## Layout
 
@@ -35,6 +35,9 @@ Keep credentials, secret values, private data, and runtime state out of Git.
 
 ## Changes
 
+Keep each document in the repository that owns its content.
+Update its nearest index when you add a document.
+
 ## Library
 
 Run focused tests first during development.
@@ -44,3 +47,6 @@ Prevent repeated full-suite runs during development.
 Run the full `npm test` suite for final validation before a commit, milestone, or release.
 
 ## npm publication
+
+Run npm run pack to check package contents.
+Publish only after approved release steps.

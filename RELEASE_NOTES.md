@@ -1,18 +1,24 @@
 # Release Notes
 
-## 13.0.0 — 2026-10-19
+## 14.0.0 — 2026-10-20
+
+### Added
+
+- Add focused modules and tests for registration policy and `beforeExit` timer handling.
 
 ### Changed
 
-- Upgrade `@eliware/log` and `@eliware/test` to version 13. Refresh the lockfile.
-- Align package metadata, specifications, and validation with Convention 13.
+- Upgrade `@eliware/log` and `@eliware/test` to version 14. Refresh the lockfile.
+- Align package metadata, specifications, and validation with Convention 14.
 - Clarify manual shutdown labels, repeated registrations, and abort handling in the API documentation.
-- Rewrite user documentation with direct wording and simple steps.
+- Rewrite user documentation and add package version, contents, and release details.
 - Update CI and npm workflows to use checkout v7 and setup-node v7.
 - Fetch full Git history in validation and use the standard npm workflow name.
 - Align the Knit deployment command with the shared workflow.
-- Split registration policy and `beforeExit` timer handling into focused modules.
-- Report invalid logger methods with an error message that names the method.
+
+### Fixed
+
+- Name invalid logger methods in validation error messages.
 
 ## 12.0.0 — 2026-10-12
 
