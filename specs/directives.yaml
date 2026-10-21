@@ -1,4 +1,4 @@
-version: "14.0"
+version: "15.0"
 description: Requirements for the Eliware signals library.
 directives:
   - id: E-105.0

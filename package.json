@@ -1,6 +1,6 @@
 {
   "name": "@eliware/signals",
-  "version": "14.0.0",
+  "version": "15.0.0",
   "type": "module",
   "description": "Graceful shutdown signal handler utility for Node.js",
   "keywords": [
@@ -48,10 +48,10 @@
     "node": ">=26"
   },
   "dependencies": {
-    "@eliware/log": "^14.0.0"
+    "@eliware/log": "^15.0.0"
   },
   "devDependencies": {
-    "@eliware/test": "^14.0.0",
+    "@eliware/test": "^15.0.0",
     "typescript": "^7.0.2"
   },
   "jest": {

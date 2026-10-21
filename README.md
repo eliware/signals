@@ -69,7 +69,7 @@ Read the [user guides](docs/README.md) for full usage details.
 ## Development
 
 Run `npm ci` to install the locked development dependencies.
-Read [AGENTS.md](AGENTS.md) for repository validation commands.
+Read [AGENTS.md](AGENTS.md) for repository validation commands and [the specification index](specs/README.md) for repository requirements.
 
 ## Testing
 
@@ -96,25 +96,13 @@ Read the [API reference](docs/api.md) and [type declarations](src/index.d.ts) fo
 
 ## Packaging
 
-The package uses native ESM and requires Node.js 26 or later.
-The runtime entrypoint is `src/index.mjs`.
-The type declarations are `src/index.d.ts`.
-The package includes `src/`, `docs/`, `examples/`, and `specs/`.
-It also includes `README.md`, `AGENTS.md`, `LICENSE`, `RELEASE_NOTES.md`, and `package.json`.
-
 Use numeric `MAJOR.MINOR.PATCH` versions and matching `v<version>` release tags.
 The npm workflow validates the matching tag and package version before publication.
-Install the public package from [npm](https://www.npmjs.com/package/@eliware/signals).
-Operations controls release approval. Repository validation does not authorize publication.
-
-Read the [specification index](specs/README.md).
+Run `npm run pack` to check package contents. Publish only after approved release steps.
 
 ## Examples
 
-Read the [example index](examples/README.md).
-The [example](examples/example.mjs) requires Node.js 26 or later and installed package dependencies.
-Run it with `node examples/example.mjs`.
-It runs cleanup and removes handlers without exiting the process.
+Read the [example index](examples/README.md) and run `node examples/example.mjs`.
 
 ## Support
 

@@ -1,5 +1,13 @@
 # Release Notes
 
+## 15.0.0 — 2026-10-21
+
+### Changed
+
+- Upgrade `@eliware/log` and `@eliware/test` to version 15. Refresh the lockfile.
+- Align package metadata, repository directives, and maintained documentation with Convention 15.
+- Remove redundant repository details from the README indexes and development instructions.
+
 ## 14.0.0 — 2026-10-21
 
 ### Added
