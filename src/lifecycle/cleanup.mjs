@@ -1,7 +1,6 @@
 import { deleteRegistration } from "./registration.mjs";
-import { createAbortCleanup } from "./abort-cleanup.mjs";
 
-export const createCleanup = ({ processObj, signal, listeners, onBeforeExit, deactivate }) => {
+export const createCleanup = ({ processObj, listeners, onBeforeExit, deactivate }) => {
   let removed = false;
 
   const removeHandlers = () => {
@@ -12,10 +11,8 @@ export const createCleanup = ({ processObj, signal, listeners, onBeforeExit, dea
       for (const [name, listener] of listeners) processObj.off(name, listener);
       processObj.off("beforeExit", onBeforeExit);
     }
-    abortCleanup.remove();
     deleteRegistration(processObj);
   };
-  const abortCleanup = createAbortCleanup({ signal, onAbort: removeHandlers });
 
-  return { removeHandlers, attachAbortHandler: abortCleanup.attach, getRemoved: () => removed };
+  return { removeHandlers, getRemoved: () => removed };
 };

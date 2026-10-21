@@ -13,7 +13,7 @@ test("cleans up process listeners idempotently", () => {
 const makeProcess = () => ({ on: jest.fn(), off: jest.fn(), exit: jest.fn() });
 const makeLog = () => ({ debug: jest.fn(), warn: jest.fn(), error: jest.fn() });
 
-test("supports cleanup, abort, and shutdown without process exit", async () => {
+test("supports cleanup and shutdown without process exit", async () => {
   const processObj = makeProcess();
   const log = makeLog();
   const registration = registerSignals({ processObj, log, signals: ["USR1"], exit: false });

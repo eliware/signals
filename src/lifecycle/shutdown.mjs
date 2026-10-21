@@ -1,19 +1,13 @@
 import { withEventLoopKeepAlive } from "./before-exit.mjs";
 import { createHookRunner } from "./hooks.mjs";
+import { createExitPolicy } from "./exit-policy.mjs";
 
 export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
   let shuttingDown = false;
   let active = true;
   let shutdownPromise;
   let hooksFinished = false;
-  let exitRequested = false;
-  let exitCalled = false;
-
-  const exitProcess = () => {
-    if (!exitRequested || !exit || typeof processObj.exit !== "function" || exitCalled) return;
-    exitCalled = true;
-    processObj.exit(exitCode);
-  };
+  const exitPolicy = createExitPolicy({ processObj, exit, exitCode });
   const logSafely = (method, ...args) => {
     try {
       log[method](...args);
@@ -32,7 +26,7 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
     if (shutdownPromise) {
       if (hookRunner.isRunning()) return Promise.resolve();
       logSafely("warn", `Received ${receivedSignal} during shutdown.`);
-      if (hooksFinished) exitProcess();
+      if (hooksFinished) exitPolicy.afterHooks();
       return shutdownPromise;
     }
     shuttingDown = true;
@@ -46,13 +40,13 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
     runHooks(receivedSignal)
       .then(() => {
         hooksFinished = true;
-        exitProcess();
+        exitPolicy.afterHooks();
       })
       .then(resolveShutdown, rejectShutdown);
     return shutdownPromise;
   };
   const shutdownForSignal = (receivedSignal) => {
-    exitRequested = true;
+    exitPolicy.request();
     return shutdown(receivedSignal);
   };
   const onBeforeExit = (code) => {
@@ -69,7 +63,7 @@ export const createShutdown = ({ hooks, log, processObj, exit, exitCode }) => {
     withEventLoopKeepAlive(() => runHooks("beforeExit"))
       .then(() => {
         hooksFinished = true;
-        exitProcess();
+        exitPolicy.afterHooks();
       })
       .then(resolveShutdown, rejectShutdown);
     return shutdownPromise;

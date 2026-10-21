@@ -76,6 +76,22 @@ describe("registerSignals", () => {
     ).toThrow(TypeError);
   });
 
+  test("rejects invalid options before registering handlers", () => {
+    expect(() => registerSignalsNamed(null)).toThrow("options must be an object");
+    expect(() => registerSignalsNamed({ processObj: mockProcess, exit: "false" })).toThrow(
+      "exit must be a boolean",
+    );
+    expect(mockProcess.on).not.toHaveBeenCalled();
+    expect(() => registerSignalsNamed({ processObj: mockProcess, signals: "SIGTERM" })).toThrow(
+      "signals must be an array of signal names",
+    );
+  });
+
+  test("registers each valid signal once", () => {
+    registerSignalsNamed({ processObj: mockProcess, signals: ["SIGTERM", "SIGTERM"] });
+    expect(mockProcess.on.mock.calls.map(([name]) => name)).toEqual(["SIGTERM", "beforeExit"]);
+  });
+
   test("runs hooks and reports repeated labeled shutdown", async () => {
     const hook = jest.fn(async (signal) => signal);
     const { shutdown, getShuttingDown } = registerSignalsNamed({

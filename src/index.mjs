@@ -1,16 +1,15 @@
 import logger from "@eliware/log";
 import { defaultSignals } from "./lifecycle/defaults.mjs";
-import {
-  validateLogger,
-  normalizeSignals,
-  validateOptions,
-  validateLifecycleOptions,
-} from "./lifecycle/validation.mjs";
+import { validateLogger } from "./lifecycle/validation/logger.mjs";
+import { normalizeSignals } from "./lifecycle/validation/signals.mjs";
+import { validateOptions } from "./lifecycle/validation/options.mjs";
+import { validateLifecycleOptions } from "./lifecycle/validation/lifecycle-options.mjs";
 import { getRegistration, setRegistration } from "./lifecycle/registration.mjs";
 import { applyRegistrationPolicy } from "./lifecycle/registration-policy.mjs";
 import { createShutdown } from "./lifecycle/shutdown.mjs";
 import { installHandlers } from "./lifecycle/handlers.mjs";
 import { createCleanup } from "./lifecycle/cleanup.mjs";
+import { createAbortRegistration } from "./lifecycle/abort/registration.mjs";
 
 export const registerSignals = (options = {}) => {
   if (options === null || typeof options !== "object") {
@@ -53,24 +52,27 @@ export const registerSignals = (options = {}) => {
   });
   const cleanup = createCleanup({
     processObj,
-    signal,
     ...handlers,
     deactivate: () => {
       handlers.deactivate();
       lifecycle.deactivate();
     },
   });
+  const abortRegistration = createAbortRegistration({
+    signal,
+    removeHandlers: cleanup.removeHandlers,
+  });
   const api = {
     shutdown: lifecycle.shutdown,
     getShuttingDown: lifecycle.getShuttingDown,
-    removeHandlers: cleanup.removeHandlers,
+    removeHandlers: abortRegistration.removeHandlers,
     get removed() {
       return cleanup.getRemoved();
     },
   };
   registration = { hooks, api, log, exitCode, exit, signal, signals: selected };
   setRegistration(processObj, registration);
-  cleanup.attachAbortHandler();
+  abortRegistration.attach();
   log.debug("Registered Handlers", { signals: selected.join(", ") });
   return registration.api;
 };
